@@ -76,10 +76,8 @@
             - "cpu-manager-policy=static"
             - "system-reserved=cpu={{ reserved_cpu_m }}m"
         mode: "0644"
-      notify: restart k3s
 
-  handlers:
-    - name: restart k3s
+    - name: Restart K3s to apply CPU manager policy
       ansible.builtin.systemd:
         name: k3s
         state: restarted
