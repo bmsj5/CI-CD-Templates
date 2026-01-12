@@ -19,5 +19,7 @@ k3s_etcd_datastore: true
 # Enable static CPU manager for dedicated CPU core pinning
 # Pods with Guaranteed QoS (requests.cpu == limits.cpu, both integers) 
 # will be exclusively pinned to dedicated CPU cores
-k3s_kubelet_arg:
-  - "cpu-manager-policy=static"
+# Using k3s_config to add kubelet-arg to config.yaml
+k3s_config:
+  kubelet-arg:
+    - "cpu-manager-policy=static"
