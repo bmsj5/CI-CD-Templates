@@ -37,3 +37,17 @@
                 - http01:
                     ingress:
                       class: traefik
+
+    # --- Kube-State-Metrics Installation ---
+    - name: Install kube-state-metrics
+      kubernetes.core.helm:
+        name: kube-state-metrics
+        chart_ref: prometheus-community/kube-state-metrics
+        chart_repo_url: https://prometheus-community.github.io/helm-charts
+        chart_version: 28.3.0
+        release_namespace: kube-system
+        create_namespace: true
+        values_files:
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/kube-state-metrics/values.yml"
+        wait: true
+        timeout: 5m

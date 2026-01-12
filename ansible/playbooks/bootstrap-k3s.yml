@@ -22,3 +22,37 @@
 
   roles:
     - role: xanmanning.k3s
+
+  post_tasks:
+    # Enable static CPU manager policy for CPU pinning
+    # Official K3s method: https://docs.k3s.io/installation/configuration
+    # This enables dedicated CPU cores for pods with Guaranteed QoS (integer CPU requests == limits)
+    - name: Ensure K3s config directory exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s/config.yaml.d
+        state: directory
+        mode: "0755"
+
+    - name: Configure static CPU manager policy
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml.d/99-cpu-manager.yaml
+        content: |
+          kubelet-arg:
+            - "cpu-manager-policy=static"
+        mode: "0644"
+      notify: apply cpu manager policy
+
+  handlers:
+    - name: apply cpu manager policy
+      block:
+        - name: Clear existing CPU manager state
+          ansible.builtin.file:
+            path: /var/lib/kubelet/cpu_manager_state
+            state: absent
+          failed_when: false
+
+        - name: Restart K3s to apply CPU manager policy
+          ansible.builtin.systemd:
+            name: k3s
+            state: restarted
+            daemon_reload: yes

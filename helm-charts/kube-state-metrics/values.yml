@@ -1,0 +1,50 @@
+# Kube-State-Metrics Helm Chart Values
+# Install via: helm install kube-state-metrics prometheus-community/kube-state-metrics -n kube-system -f values.yml
+
+# Use the official prometheus-community chart
+# This values file customizes the deployment
+
+# Replica count (typically 1 for small clusters, 2+ for HA)
+replicas: 1
+
+# Resource limits
+resources:
+  limits:
+    cpu: 100m
+    memory: 190Mi
+  requests:
+    cpu: 100m
+    memory: 190Mi
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+# Node selector (optional - remove if you want it to run on any node)
+# nodeSelector: {}
+
+# Tolerations (optional - remove if you don't need to run on tainted nodes)
+# tolerations: []
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Pod security policy (if enabled in cluster)
+podSecurityPolicy:
+  enabled: false
