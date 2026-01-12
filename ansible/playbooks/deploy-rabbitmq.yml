@@ -1,7 +1,6 @@
 ---
 # Required env vars (set via ANSIBLE_EXTRA_ENV_JSON):
 #   - NAMESPACE: Kubernetes namespace (required)
-#   - RABBITMQ_INGRESS_HOST: Ingress hostname (optional, omit to skip ingress)
 - name: Deploy RabbitMQ Cluster (using Cluster Operator)
   hosts: localhost
   connection: local
@@ -11,7 +10,6 @@
       ansible.builtin.set_fact:
         target_namespace: "{{ lookup('env', 'NAMESPACE') }}"
         rabbitmq_hostname_suffix: ".rabbitmq-cluster.{{ lookup('env', 'NAMESPACE') }}.svc.cluster.local"
-        rabbitmq_ingress_host: "{{ lookup('env', 'RABBITMQ_INGRESS_HOST') | default('') }}"
 
     - name: Create namespace
       kubernetes.core.k8s:
@@ -41,8 +39,6 @@
               requests:
                 cpu: 100m
                 memory: 256Mi
-            service:
-              type: ClusterIP
             rabbitmq:
               additionalConfig: |
                 cluster_formation.peer_discovery_backend = k8s
@@ -52,42 +48,5 @@
                 default_user = {{ lookup('env', 'RABBITMQ_DEFAULT_USER') }}
                 default_pass = {{ lookup('env', 'RABBITMQ_DEFAULT_PASS') }}
               additionalPlugins:
-                - rabbitmq_prometheus
-                - rabbitmq_management
-            podTemplate:
-              metadata:
-                annotations:
-                  prometheus.io/scrape: "true"
-                  prometheus.io/port: "15692"
-                  prometheus.io/path: "/metrics"
+                - rabbitmq_prometheus # RabbitMQ exporter for metrics. Exposes on port 15692
       no_log: true
-
-    - name: Create RabbitMQ Management Ingress
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: networking.k8s.io/v1
-          kind: Ingress
-          metadata:
-            name: rabbitmq-management-ingress
-            namespace: "{{ target_namespace }}"
-            annotations:
-              cert-manager.io/cluster-issuer: "letsencrypt-prod"
-          spec:
-            ingressClassName: traefik
-            rules:
-              - host: "{{ rabbitmq_ingress_host }}"
-                http:
-                  paths:
-                    - path: /
-                      pathType: Prefix
-                      backend:
-                        service:
-                          name: rabbitmq-cluster
-                          port:
-                            number: 15672
-            tls:
-              - hosts:
-                  - "{{ rabbitmq_ingress_host }}"
-                secretName: rabbitmq-tls-secret
-      when: rabbitmq_ingress_host | length > 0

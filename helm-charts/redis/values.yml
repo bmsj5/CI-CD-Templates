@@ -35,8 +35,7 @@ sentinel:
       cpu: 50m
       memory: 128Mi
 
-# Redis Exporter for Prometheus metrics
-# Exposes metrics on port 9121
+# Redis exporter for metrics. Exposes on port 9121
 metrics:
   enabled: true
   resources:
@@ -46,7 +45,3 @@ metrics:
     requests:
       cpu: 25m
       memory: 64Mi
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9121"
-    prometheus.io/path: "/metrics"

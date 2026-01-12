@@ -69,6 +69,7 @@ metrics:
     dbstats: false
     topmetrics: false
   
+# MongoDB exporter for metrics. Exposes on port 9216
   resources:
     limits:
       cpu: 50m
@@ -76,7 +77,3 @@ metrics:
     requests:
       cpu: 25m
       memory: 64Mi
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9216"
-    prometheus.io/path: "/metrics"
