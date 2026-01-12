@@ -41,18 +41,18 @@
             - "cpu-manager-policy=static"
         mode: "0644"
       register: cpu_manager_config
-      notify: restart k3s
 
-    - name: Clear CPU manager state file
-      ansible.builtin.file:
-        path: /var/lib/kubelet/cpu_manager_state
-        state: absent
+    - name: Clear CPU manager state file and restart K3s
+      block:
+        - name: Clear CPU manager state file
+          ansible.builtin.file:
+            path: /var/lib/kubelet/cpu_manager_state
+            state: absent
+          failed_when: false
+
+        - name: Restart K3s to apply CPU manager policy
+          ansible.builtin.systemd:
+            name: k3s
+            state: restarted
+            daemon_reload: yes
       when: cpu_manager_config.changed
-      failed_when: false
-
-  handlers:
-    - name: restart k3s
-      ansible.builtin.systemd:
-        name: k3s
-        state: restarted
-        daemon_reload: yes
