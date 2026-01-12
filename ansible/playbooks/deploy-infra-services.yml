@@ -39,15 +39,10 @@
                       class: traefik
 
     # --- Kube-State-Metrics Installation ---
-    - name: Add prometheus-community Helm repository
-      kubernetes.core.helm_repository:
-        name: prometheus-community
-        repo_url: https://prometheus-community.github.io/helm-charts
-
     - name: Install kube-state-metrics
       kubernetes.core.helm:
         name: kube-state-metrics
-        chart_ref: prometheus-community/kube-state-metrics
+        chart_ref: oci://ghcr.io/prometheus-community/kube-state-metrics
         chart_version: 7.0.0
         release_namespace: kube-system
         create_namespace: true
