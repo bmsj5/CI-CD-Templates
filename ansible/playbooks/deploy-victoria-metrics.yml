@@ -1,4 +1,3 @@
----
 - name: Deploy Victoria Metrics
   hosts: localhost
   connection: local

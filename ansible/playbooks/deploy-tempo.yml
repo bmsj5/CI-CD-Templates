@@ -1,4 +1,3 @@
----
 - name: Deploy Tempo with MinIO
   hosts: localhost
   connection: local

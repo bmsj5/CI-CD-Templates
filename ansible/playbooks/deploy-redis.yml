@@ -1,17 +1,12 @@
----
 - name: Deploy Redis HA
   hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: Set namespace variable
-      ansible.builtin.set_fact:
-        target_namespace: "{{ lookup('env', 'NAMESPACE') }}"
-
-    - name: Create namespace
+    - name: Create Redis namespace
       kubernetes.core.k8s:
         kind: Namespace
-        name: "{{ target_namespace }}"
+        name: redis
         state: present
 
     - name: Create Redis secrets
@@ -22,7 +17,7 @@
           kind: Secret
           metadata:
             name: redis-secrets
-            namespace: "{{ target_namespace }}"
+            namespace: redis
           type: Opaque
           stringData:
             redis-password: "{{ lookup('env', 'REDIS_PASSWORD') }}"
@@ -33,7 +28,7 @@
         name: redis
         chart_ref: oci://registry-1.docker.io/bitnamicharts/redis
         chart_version: "24.1.0"
-        release_namespace: "{{ target_namespace }}"
+        release_namespace: redis
         create_namespace: false
         wait: true
         timeout: 5m

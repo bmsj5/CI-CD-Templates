@@ -1,4 +1,3 @@
----
 - name: Deploy Core Infrastructure Services
   hosts: localhost
   connection: local

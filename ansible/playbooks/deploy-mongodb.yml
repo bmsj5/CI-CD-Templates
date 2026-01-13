@@ -1,24 +1,19 @@
----
 - name: Deploy MongoDB HA
   hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: Set namespace variable
-      ansible.builtin.set_fact:
-        target_namespace: "{{ lookup('env', 'NAMESPACE') }}"
-
-    - name: Create namespace
+    - name: Create MongoDB namespace
       kubernetes.core.k8s:
         kind: Namespace
-        name: "{{ target_namespace }}"
+        name: mongodb
         state: present
 
     - name: Check if MongoDB admin secret exists
       kubernetes.core.k8s_info:
         kind: Secret
         name: mongodb-admin-password
-        namespace: "{{ target_namespace }}"
+        namespace: mongodb
       register: mongodb_secret_check
 
     - name: Generate MongoDB replica set key (only if secret doesn't exist)
@@ -32,7 +27,7 @@
       kubernetes.core.k8s_info:
         kind: Secret
         name: mongodb-admin-password
-        namespace: "{{ target_namespace }}"
+        namespace: mongodb
       register: existing_mongodb_secret
       when: mongodb_secret_check.resources | length > 0
 
@@ -50,7 +45,7 @@
           kind: Secret
           metadata:
             name: mongodb-admin-password
-            namespace: "{{ target_namespace }}"
+            namespace: mongodb
           type: Opaque
           stringData:
             mongodb-root-password: "{{ lookup('env', 'MONGO_INITDB_ROOT_PASSWORD') }}"
@@ -63,7 +58,7 @@
         name: mongodb
         chart_ref: oci://registry-1.docker.io/bitnamicharts/mongodb
         chart_version: "18.1.20"
-        release_namespace: "{{ target_namespace }}"
+        release_namespace: mongodb
         create_namespace: false
         wait: true
         timeout: 10m

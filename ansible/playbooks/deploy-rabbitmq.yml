@@ -1,20 +1,12 @@
----
-# Required env vars (set via ANSIBLE_EXTRA_ENV_JSON):
-#   - NAMESPACE: Kubernetes namespace (required)
 - name: Deploy RabbitMQ Cluster (using Cluster Operator)
   hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: Set namespace variable
-      ansible.builtin.set_fact:
-        target_namespace: "{{ lookup('env', 'NAMESPACE') }}"
-        rabbitmq_hostname_suffix: ".rabbitmq-cluster.{{ lookup('env', 'NAMESPACE') }}.svc.cluster.local"
-
-    - name: Create namespace
+    - name: Create RabbitMQ namespace
       kubernetes.core.k8s:
         kind: Namespace
-        name: "{{ target_namespace }}"
+        name: rabbitmq
         state: present
     
     - name: Deploy RabbitMQ cluster
@@ -25,7 +17,7 @@
           kind: RabbitmqCluster
           metadata:
             name: rabbitmq-cluster
-            namespace: "{{ target_namespace }}"
+            namespace: rabbitmq
           spec:
             replicas: 3
             image: rabbitmq:3.13.0
@@ -44,7 +36,7 @@
                 cluster_formation.peer_discovery_backend = k8s
                 cluster_formation.k8s.host = kubernetes.default.svc
                 cluster_formation.k8s.address_type = hostname
-                cluster_formation.k8s.hostname_suffix = {{ rabbitmq_hostname_suffix }}
+                cluster_formation.k8s.hostname_suffix = .rabbitmq-cluster.rabbitmq.svc.cluster.local
                 default_user = {{ lookup('env', 'RABBITMQ_DEFAULT_USER') }}
                 default_pass = {{ lookup('env', 'RABBITMQ_DEFAULT_PASS') }}
               additionalPlugins:
