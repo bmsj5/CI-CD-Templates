@@ -7,3 +7,9 @@ resources:
   requests:
     cpu: 100m
     memory: 190Mi
+
+# Enable label metrics for resources
+# This allows *_labels metrics (e.g., kube_namespace_labels, kube_deployment_labels, etc.)
+# to be exposed with all labels from the Kubernetes resources
+extraArgs:
+  - --metric-labels-allowlist=namespaces=[*],deployments=[*],daemonsets=[*],statefulsets=[*],networkpolicies=[*],services=[*],horizontalpodautoscalers=[*]
