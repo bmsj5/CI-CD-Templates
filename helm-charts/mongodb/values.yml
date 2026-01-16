@@ -41,7 +41,7 @@ resources:
     memory: 1Gi
   requests:
     cpu: 1
-    memory: 256Mi
+    memory: 512Mi
 
 # MongoDB Exporter for Prometheus metrics
 # Exposes metrics on port 9216
