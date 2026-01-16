@@ -7,12 +7,12 @@ grafana.ini:
     allow_loading_unsigned_plugins: grafana-openobserve-datasource
 
 resources:
-  limits: 
+  limits:
     cpu: 300m
     memory: 512Mi
   requests:
     cpu: 100m
-    memory: 256Mi
+    memory: 384Mi
 
 # External PostgreSQL database configuration (required for HA)
 # Configured via environment variables
