@@ -89,10 +89,10 @@ minio:
   resources:
     limits:
       cpu: 200m
-      memory: 256Mi
+      memory: 384Mi
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 256Mi
 
 ingress:
   enabled: true
