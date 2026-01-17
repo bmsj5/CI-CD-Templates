@@ -141,9 +141,9 @@
             - "'already exists' not in topology_result.stderr"
 
         - name: Create PodDisruptionBudget for CoreDNS
-          ansible.builtin.command:
-            cmd: |
-              kubectl apply -f - <<EOF
+          ansible.builtin.shell:
+            cmd: kubectl apply -f -
+            stdin: |
               apiVersion: policy/v1
               kind: PodDisruptionBudget
               metadata:
@@ -154,7 +154,6 @@
                 selector:
                   matchLabels:
                     k8s-app: kube-dns
-              EOF
           environment:
             KUBECONFIG: /etc/rancher/k3s/k3s.yaml
           register: pdb_result
