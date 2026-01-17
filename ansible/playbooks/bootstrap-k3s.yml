@@ -84,7 +84,7 @@
 
     # Configure CoreDNS High Availability
     # K3s v1.35+ deploys CoreDNS as a regular Deployment
-    # We need to patch the deployment directly to scale it and add HA features
+    # We use kubectl commands instead of kubernetes.core.k8s to avoid Python library dependencies
     # Only run on the first control-plane node to avoid conflicts.
     - name: Configure CoreDNS HA
       when:
@@ -96,65 +96,66 @@
             coredns_replicas: "{{ groups['all'] | length if (groups['all'] | length <= 3) else 3 }}"
             coredns_pdb_min: "{{ (groups['all'] | length - 1) if (groups['all'] | length > 1 and groups['all'] | length <= 3) else 2 }}"
 
-        - name: Scale CoreDNS deployment to {{ coredns_replicas }} replicas
-          kubernetes.core.k8s:
-            state: patched
-            kind: Deployment
-            name: coredns
-            namespace: kube-system
-            definition:
-              spec:
-                replicas: "{{ coredns_replicas | int }}"
+        - name: Wait for CoreDNS deployment to be available
+          ansible.builtin.command:
+            cmd: kubectl get deployment coredns -n kube-system
           environment:
             KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+          register: coredns_exists
+          retries: 30
+          delay: 10
+          until: coredns_exists.rc == 0
+          changed_when: false
+
+        - name: Scale CoreDNS deployment to {{ coredns_replicas }} replicas
+          ansible.builtin.command:
+            cmd: kubectl scale deployment coredns -n kube-system --replicas={{ coredns_replicas }}
+          environment:
+            KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+          register: scale_result
+          changed_when: "'scaled' in scale_result.stdout"
 
         - name: Add topology spread constraints to CoreDNS
-          kubernetes.core.k8s:
-            state: patched
-            kind: Deployment
-            name: coredns
-            namespace: kube-system
-            definition:
-              spec:
-                template:
-                  spec:
-                    topologySpreadConstraints:
-                      - maxSkew: 1
-                        topologyKey: kubernetes.io/hostname
-                        whenUnsatisfiable: DoNotSchedule
-                        labelSelector:
-                          matchLabels:
-                            k8s-app: kube-dns
+          ansible.builtin.command:
+            cmd: |
+              kubectl patch deployment coredns -n kube-system --type='json' -p='[{
+                "op": "add",
+                "path": "/spec/template/spec/topologySpreadConstraints",
+                "value": [{
+                  "maxSkew": 1,
+                  "topologyKey": "kubernetes.io/hostname",
+                  "whenUnsatisfiable": "DoNotSchedule",
+                  "labelSelector": {
+                    "matchLabels": {
+                      "k8s-app": "kube-dns"
+                    }
+                  }
+                }]
+              }]'
           environment:
             KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+          register: topology_result
+          changed_when: "'patched' in topology_result.stdout"
+          failed_when: 
+            - topology_result.rc != 0
+            - "'already exists' not in topology_result.stderr"
 
         - name: Create PodDisruptionBudget for CoreDNS
-          kubernetes.core.k8s:
-            state: present
-            definition:
+          ansible.builtin.command:
+            cmd: |
+              kubectl apply -f - <<EOF
               apiVersion: policy/v1
               kind: PodDisruptionBudget
               metadata:
                 name: coredns
                 namespace: kube-system
               spec:
-                minAvailable: "{{ coredns_pdb_min | int }}"
+                minAvailable: {{ coredns_pdb_min }}
                 selector:
                   matchLabels:
                     k8s-app: kube-dns
+              EOF
           environment:
             KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-          notify: Wait for CoreDNS rollout
-
-  handlers:
-    - name: Wait for CoreDNS rollout
-      ansible.builtin.command:
-        cmd: kubectl rollout status deployment/coredns -n kube-system
-      environment:
-        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-      register: coredns_rollout
-      changed_when: false
-      failed_when: false
-      retries: 30
-      delay: 10
-      until: coredns_rollout.rc == 0
+          register: pdb_result
+          changed_when: "'created' in pdb_result.stdout or 'configured' in pdb_result.stdout"
