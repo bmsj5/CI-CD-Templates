@@ -8,11 +8,11 @@ grafana.ini:
 
 resources:
   limits:
-    cpu: 300m
-    memory: 512Mi
+    cpu: 500m
+    memory: 768Mi
   requests:
-    cpu: 100m
-    memory: 384Mi
+    cpu: 250m
+    memory: 512Mi
 
 # External PostgreSQL database configuration (required for HA)
 # Configured via environment variables
