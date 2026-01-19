@@ -7,10 +7,6 @@
     ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
     ansible_ssh_private_key_file: "{{ lookup('env', 'ANSIBLE_SSH_PRIVATE_KEY_FILE') | default('', true) }}"
   tasks:
-    - name: Set absolute template path
-      ansible.builtin.set_fact:
-        template_path: "{{ playbook_dir }}/../templates/inventory.j2"
-
     - name: Ensure /workspace/ansible directory exists
       ansible.builtin.file:
         path: /workspace/ansible
@@ -19,6 +15,6 @@
 
     - name: Generate inventory file
       ansible.builtin.template:
-        src: "{{ template_path }}"
+        src: inventory.j2
         dest: "/workspace/ansible/inventory.ini"
         mode: "0644"
