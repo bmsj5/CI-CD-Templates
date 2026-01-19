@@ -1,16 +1,11 @@
 # K3s Cluster Configuration Variables
 # These variables are used by the bootstrap-k3s.yml playbook
 
-# K3s version to install (use specific stable release)
 k3s_release_version: v1.35.0+k3s1
-
-# This is the secret token for the cluster.
-# We read it from the environment variable that your
-# ansible-run action will inject from GitHub secrets.
 k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
-
-# This tells the k3s role that we are in a multi-node HA cluster
 k3s_build_cluster: true
-
-# Enable embedded etcd datastore for HA (required for multiple control nodes)
 k3s_etcd_datastore: true
+
+k3s_server_args:
+  - "--disable=servicelb" # Disable ServiceLB to eliminate svclb-traefik pods and use direct host networking
+  - "--disable-cloud-controller" # Prevents K3s from trying to "talk" to a cloud provider that doesn't exist for bare metal nodes
