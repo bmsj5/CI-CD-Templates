@@ -80,7 +80,7 @@
       notify: Restart K3s
 
     # -------------------------------------------------------------
-    # Deploy Traefik HA HelmChartConfig manifest
+    # Deploy manifests for HA services
     # -------------------------------------------------------------
     - name: Deploy Traefik HA HelmChartConfig manifest
       when:
@@ -90,82 +90,32 @@
         src: traefik-ha-helmchartconfig.yaml.j2
         dest: /var/lib/rancher/k3s/server/manifests/traefik-ha-helmchartconfig.yaml
         mode: "0644"
-
-    # -------------------------------------------------------------
-    # Scale CoreDNS deployment to 3 replicas
-    # -------------------------------------------------------------
-    - name: Scale CoreDNS deployment to 3 replicas
+    
+    - name: Get current CoreDNS image version
       when:
         - k3s_control_node | bool
         - inventory_hostname == groups['all'][0]
-      ansible.builtin.command:
-        cmd: kubectl scale deployment coredns -n kube-system --replicas=3
+      ansible.builtin.shell: |
+        kubectl get deployment coredns -n kube-system -o jsonpath='{.spec.template.spec.containers[0].image}'
       environment:
         KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-      register: scale_result
-      changed_when: "'scaled' in scale_result.stdout"
+      register: coredns_image_check
+      changed_when: false
+      failed_when: false 
 
-    - name: Configure CoreDNS resources and topology constraints
+    - name: Set coredns_image fact
+      ansible.builtin.set_fact:
+        coredns_image: "{{ coredns_image_check.stdout | default('rancher/mirrored-coredns-coredns:1.13.1') }}"
+
+    - name: Deploy CoreDNS HA manifest (Override Default)
+      tags: coredns_ha
       when:
         - k3s_control_node | bool
         - inventory_hostname == groups['all'][0]
-      ansible.builtin.command:
-        cmd: |
-          kubectl patch deployment coredns -n kube-system --type='strategic' -p='{
-            "spec": {
-              "template": {
-                "spec": {
-                  "containers": [{
-                    "name": "coredns",
-                    "resources": {
-                      "requests": {"cpu": "200m", "memory": "128Mi"},
-                      "limits": {"cpu": "200m", "memory": "128Mi"}
-                    }
-                  }],
-                  "topologySpreadConstraints": [{
-                    "maxSkew": 1,
-                    "topologyKey": "kubernetes.io/hostname",
-                    "whenUnsatisfiable": "DoNotSchedule",
-                    "labelSelector": {
-                      "matchLabels": {"k8s-app": "kube-dns"}
-                    }
-                  }]
-                }
-              }
-            }
-          }'
-      environment:
-        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-      register: patch_result
-      changed_when: "'patched' in patch_result.stdout"
-      failed_when:
-        - patch_result.rc != 0
-        - "'already exists' not in patch_result.stderr"
-
-    - name: Apply CoreDNS PodDisruptionBudget
-      when:
-        - k3s_control_node | bool
-        - inventory_hostname == groups['all'][0]
-      ansible.builtin.command:
-        cmd: |
-          kubectl apply -f - <<EOF
-          apiVersion: policy/v1
-          kind: PodDisruptionBudget
-          metadata:
-            name: coredns
-            namespace: kube-system
-            labels:
-              k8s-app: kube-dns
-          spec:
-            minAvailable: 2
-            selector:
-              matchLabels:
-                k8s-app: kube-dns
-          EOF
-      environment:
-        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-      register: pdb_result
-      changed_when: "'created' in pdb_result.stdout or 'configured' in pdb_result.stdout"
+      ansible.builtin.template:
+        src: coredns-ha-manifest.yaml.j2
+        dest: /var/lib/rancher/k3s/server/manifests/coredns.yaml
+        mode: "0644"
 
   handlers:
     - name: Restart K3s
