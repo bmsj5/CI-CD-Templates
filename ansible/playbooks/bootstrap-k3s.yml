@@ -107,7 +107,7 @@
       ansible.builtin.set_fact:
         coredns_image: "{{ coredns_image_check.stdout | default('rancher/mirrored-coredns-coredns:1.13.1') }}"
 
-    - name: Deploy CoreDNS HA manifest (Override Default)
+    - name: Deploy CoreDNS HA manifest
       tags: coredns_ha
       when:
         - k3s_control_node | bool
