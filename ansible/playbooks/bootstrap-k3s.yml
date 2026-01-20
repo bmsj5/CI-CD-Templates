@@ -93,45 +93,17 @@
         mode: "0644"
 
     # -------------------------------------------------------------
-    # Deploy CoreDNS HA Enforcer Script
+    # Deploy CoreDNS HA HelmChart Manifest
     # -------------------------------------------------------------
-    - name: Deploy CoreDNS HA Enforcer Script
-      tags: coredns_ha
+    - name: Deploy CoreDNS HA HelmChart Manifest
       when:
         - k3s_control_node | bool
         - inventory_hostname == groups['all'][0]
-      ansible.builtin.copy:
-        dest: /var/lib/rancher/k3s/server/manifests/coredns-enforcer.sh
-        mode: "0755"
-        content: |
-          #!/bin/sh
-          K=/etc/rancher/k3s/k3s.yaml
-
-          kubectl scale deployment coredns -n kube-system --replicas=3 --kubeconfig $K
-
-          kubectl patch deployment coredns -n kube-system --type='strategic' -p='{"spec": {"template": {"spec": {"containers": [{"name": "coredns", "resources": {"requests": {"cpu": "200m", "memory": "128Mi"}, "limits": {"cpu": "200m", "memory": "128Mi"}}}],"topologySpreadConstraints": [{"maxSkew": 1, "topologyKey": "kubernetes.io/hostname", "whenUnsatisfiable": "DoNotSchedule", "labelSelector": {"matchLabels": {"k8s-app": "kube-dns"}}}]}}}}' --kubeconfig $K
-
-    - name: Deploy CoreDNS PodDisruptionBudget
-      tags: coredns_ha
-      when:
-        - k3s_control_node | bool
-        - inventory_hostname == groups['all'][0]
-      ansible.builtin.copy:
-        dest: /var/lib/rancher/k3s/server/manifests/coredns-pdb.yaml
+      ansible.builtin.template:
+        src: coredns-ha.yaml.j2
+        dest: /var/lib/rancher/k3s/server/manifests/coredns-ha.yaml
         mode: "0644"
-        content: |
-          apiVersion: policy/v1
-          kind: PodDisruptionBudget
-          metadata:
-            name: coredns
-            namespace: kube-system
-            labels:
-              k8s-app: kube-dns
-          spec:
-            minAvailable: 2
-            selector:
-              matchLabels:
-                k8s-app: kube-dns
+
 
   handlers:
     - name: Restart K3s

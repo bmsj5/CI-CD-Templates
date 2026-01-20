@@ -1,0 +1,40 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: coredns
+  namespace: kube-system
+spec:
+  repo: https://coredns.github.io/helm
+  chart: coredns
+  version: 1.45.0
+  targetNamespace: kube-system
+  valuesContent: |-
+    isClusterService: true
+    
+    replicaCount: 3
+
+    # Guaranteed QoS & CPU Pinning
+    resources:
+      requests:
+        cpu: 200m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+    # Ensure one pod per node topology spread
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: coredns
+          topologyKey: kubernetes.io/hostname
+
+    service:
+      clusterIP: 10.43.0.10
+
+    # Enable Prometheus service monitor for production monitoring
+    prometheus:
+      monitor:
+        enabled: true
