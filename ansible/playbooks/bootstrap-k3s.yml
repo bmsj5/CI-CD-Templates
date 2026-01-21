@@ -115,6 +115,7 @@
               --values /tmp/coredns-ha-values.yaml \
               --wait \
               --timeout=5m
+          changed_when: false 
 
         - name: Configure kube-dns service
           ansible.builtin.shell: |
@@ -135,7 +136,8 @@
               {"op": "replace", "path": "/spec/ports/0", "value": {"name": "dns", "port": 53, "protocol": "UDP", "targetPort": 53}},
               {"op": "add", "path": "/spec/ports/-", "value": {"name": "dns-tcp", "port": 53, "protocol": "TCP", "targetPort": 53}},
               {"op": "add", "path": "/spec/ports/-", "value": {"name": "metrics", "port": 9153, "protocol": "TCP", "targetPort": 9153}}
-            ]'  
+            ]'
+          changed_when: false 
 
 
   handlers:
