@@ -20,13 +20,12 @@
           {{ (num_control_nodes == '' or num_control_nodes is not defined) or
              (num_control_nodes | int > 0 and node_index < (num_control_nodes | int)) }}
     
-    - name: "CoreDNS | Capture Control Plane IP"
+    - name: CoreDNS | Capture Control Plane IP
       ansible.builtin.set_fact:
-        # Uses whichever variable Ansible is currently using to connect
         k3s_public_ip: "{{ ansible_host | default(ansible_ssh_host) | default(inventory_hostname) }}"
       when: inventory_hostname == groups['all'][0]
 
-    - name: "CoreDNS | Fetch kubeconfig to ephemeral runner"
+    - name: CoreDNS | Fetch kubeconfig to ephemeral runner
       run_once: true
       ansible.builtin.fetch:
         src: /etc/rancher/k3s/k3s.yaml
@@ -34,19 +33,19 @@
         flat: yes
       when: inventory_hostname == groups['all'][0]
 
-    - name: "CoreDNS | Deploy HA Chart (Delegated to Runner)"
+    - name: CoreDNS | Deploy HA Chart (Delegated to Runner)
       delegate_to: localhost
       run_once: true
       vars:
         target_api_ip: "{{ hostvars[groups['all'][0]]['k3s_public_ip'] }}"
       block:
-        - name: "Prepare Kubeconfig for remote access"
+        - name: Prepare Kubeconfig for remote access
           ansible.builtin.replace:
             path: "{{ playbook_dir }}/k3s-kubeconfig"
             regexp: '127\.0\.0\.1'
             replace: "{{ target_api_ip }}"
 
-        - name: "Install CoreDNS via Helm Module"
+        - name: Install CoreDNS via Helm Module
           kubernetes.core.helm:
             name: coredns
             chart_ref: coredns
@@ -54,58 +53,7 @@
             release_namespace: kube-system
             kubeconfig: "{{ playbook_dir }}/k3s-kubeconfig"
             wait: true
-            values:
-              replicaCount: 3
-              resources:
-                limits:
-                  cpu: 200m
-                  memory: 100Mi
-                requests:
-                  cpu: 200m
-                  memory: 100Mi
-              affinity:
-                podAntiAffinity:
-                  requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchExpressions:
-                      - key: k8s-app
-                        operator: In
-                        values:
-                        - kube-dns
-                    topologyKey: kubernetes.io/hostname
-
-              service:
-                clusterIP: 10.43.0.10
-                name: kube-dns
-                annotations:
-                  prometheus.io/port: "9153"
-                  prometheus.io/scrape: "true"
-                
-              servers:
-              - zones:
-                - zone: .
-                port: 53
-                plugins:
-                - name: errors
-                - name: health
-                  config:
-                    port: 8080
-                - name: ready
-                - name: kubernetes
-                  parameters: cluster.local in-addr.arpa ip6.arpa
-                  config:
-                    pods: insecure
-                    fallthrough: in-addr.arpa ip6.arpa
-                    ttl: 30
-                - name: prometheus
-                  parameters: 0.0.0.0:9153
-                - name: forward
-                  parameters: . /etc/resolv.conf
-                - name: cache
-                  parameters: 30
-                - name: loop
-                - name: reload
-                - name: loadbalance
+            values: "{{ lookup('template', 'templates/coredns-ha.yaml.j2') | from_yaml }}"
 
   roles:
     - role: xanmanning.k3s
