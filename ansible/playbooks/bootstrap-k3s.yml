@@ -96,7 +96,7 @@
       block:
         - name: Copy CoreDNS chart to K3s node
           ansible.builtin.copy:
-            src: ../../../charts/coredns-1.45.0.tgz
+            src: coredns-1.45.0.tgz
             dest: /var/lib/rancher/k3s/server/manifests/coredns-1.45.0.tgz
             mode: "0644"
 
