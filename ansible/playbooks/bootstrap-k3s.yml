@@ -17,8 +17,64 @@
     - name: Set k3s_control_node fact based on NUMBER_OF_CONTROL_PLANE_NODES
       ansible.builtin.set_fact:
         k3s_control_node: >-
-          {{ (num_control_nodes == '' or num_control_nodes is not defined) or 
+          {{ (num_control_nodes == '' or num_control_nodes is not defined) or
              (num_control_nodes | int > 0 and node_index < (num_control_nodes | int)) }}
+
+    - name: Deploy HA CoreDNS using Helm CLI
+      when:
+        - k3s_control_node | bool
+        - inventory_hostname == groups['all'][0]
+      block:
+        - name: Copy CoreDNS chart to K3s node
+          ansible.builtin.copy:
+            src: coredns-1.45.0.tgz
+            dest: /var/lib/rancher/k3s/server/manifests/coredns-1.45.0.tgz
+            mode: "0644"
+
+        - name: Read CoreDNS chart content
+          ansible.builtin.shell: |
+            base64 -w 0 /var/lib/rancher/k3s/server/manifests/coredns-1.45.0.tgz
+          register: chart_content_result
+          changed_when: false
+
+        - name: Deploy CoreDNS HA HelmChart manifest
+          ansible.builtin.template:
+            src: coredns-ha.yaml.j2
+            dest: /var/lib/rancher/k3s/server/manifests/coredns-ha.yaml
+            mode: "0644"
+          vars:
+            chart_content: "{{ chart_content_result.stdout }}"
+
+        - name: Configure kube-dns service
+          ansible.builtin.shell: |
+            set -e
+            echo "Configuring kube-dns service..."
+
+            # Give K3s time to process the HelmChart
+            echo "Waiting 30 seconds for K3s to process HelmChart..."
+            sleep 30
+
+            # Wait for CoreDNS deployment to be ready
+            kubectl wait --for=condition=available --timeout=300s deployment/coredns -n kube-system
+
+            # Create kube-dns service pointing to coredns deployment
+            kubectl expose deployment coredns --name=kube-dns \
+              --type=ClusterIP \
+              --cluster-ip=10.43.0.10 \
+              --port=53 \
+              --target-port=53 \
+              --protocol=UDP \
+              -n kube-system
+
+            # Add TCP and metrics ports
+            kubectl patch svc kube-dns -n kube-system --type=json -p '[
+              {"op": "replace", "path": "/spec/ports/0", "value": {"name": "dns", "port": 53, "protocol": "UDP", "targetPort": 53}},
+              {"op": "add", "path": "/spec/ports/-", "value": {"name": "dns-tcp", "port": 53, "protocol": "TCP", "targetPort": 53}},
+              {"op": "add", "path": "/spec/ports/-", "value": {"name": "metrics", "port": 9153, "protocol": "TCP", "targetPort": 9153}}
+            ]'
+
+            echo "Service configuration completed"
+          changed_when: false
 
   roles:
     - role: xanmanning.k3s
@@ -89,55 +145,6 @@
         dest: /var/lib/rancher/k3s/server/manifests/traefik-ha.yaml
         mode: "0644"
 
-    - name: Deploy HA CoreDNS using Helm CLI
-      when:
-        - k3s_control_node | bool
-        - inventory_hostname == groups['all'][0]
-      block:
-        - name: Copy CoreDNS chart to K3s node
-          ansible.builtin.copy:
-            src: coredns-1.45.0.tgz
-            dest: /var/lib/rancher/k3s/server/manifests/coredns-1.45.0.tgz
-            mode: "0644"
-
-        - name: Read CoreDNS chart content
-          ansible.builtin.shell: |
-            base64 -w 0 /var/lib/rancher/k3s/server/manifests/coredns-1.45.0.tgz
-          register: chart_content_result
-          changed_when: false
-
-        - name: Deploy CoreDNS HA HelmChart manifest
-          ansible.builtin.template:
-            src: coredns-ha.yaml.j2
-            dest: /var/lib/rancher/k3s/server/manifests/coredns-ha.yaml
-            mode: "0644"
-          vars:
-            chart_content: "{{ chart_content_result.stdout }}"
-
-        - name: Configure kube-dns service
-          ansible.builtin.shell: |
-            set -e
-            echo "Configuring kube-dns service..."
-
-            # Wait for CoreDNS deployment to be ready
-            kubectl wait --for=condition=available --timeout=300s deployment/coredns -n kube-system
-
-            # Create kube-dns service pointing to coredns deployment
-            kubectl expose deployment coredns --name=kube-dns \
-              --type=ClusterIP \
-              --cluster-ip=10.43.0.10 \
-              --port=53 \
-              --target-port=53 \
-              --protocol=UDP \
-              -n kube-system
-
-            # Add TCP and metrics ports
-            kubectl patch svc kube-dns -n kube-system --type=json -p '[
-              {"op": "replace", "path": "/spec/ports/0", "value": {"name": "dns", "port": 53, "protocol": "UDP", "targetPort": 53}},
-              {"op": "add", "path": "/spec/ports/-", "value": {"name": "dns-tcp", "port": 53, "protocol": "TCP", "targetPort": 53}},
-              {"op": "add", "path": "/spec/ports/-", "value": {"name": "metrics", "port": 9153, "protocol": "TCP", "targetPort": 9153}}
-            ]'
-          changed_when: false 
 
 
   handlers:
