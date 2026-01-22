@@ -35,7 +35,7 @@ lint_roles() {
             role_name=$(basename "$role")
             echo "LINTING ROLE: $role_name"
             # Use centralized .ansible-lint config (auto-detected)
-            ansible-lint "$role" --nocolor $LINT_CONFIG_FLAG || exit 1
+            ansible-lint "$role" --nocolor --offline $LINT_CONFIG_FLAG || exit 1
         fi
     done
 }
@@ -48,7 +48,7 @@ lint_playbooks() {
             playbook_name=$(basename "$playbook")
             echo "LINTING PLAYBOOK: $playbook_name"
             # Use centralized .ansible-lint config (auto-detected)
-            ansible-lint "$playbook" --nocolor $LINT_CONFIG_FLAG || exit 1
+            ansible-lint "$playbook" --nocolor --offline $LINT_CONFIG_FLAG || exit 1
         fi
     done
 }

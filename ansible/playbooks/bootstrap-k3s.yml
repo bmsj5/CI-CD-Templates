@@ -105,7 +105,7 @@
       ansible.builtin.fetch:
         src: /etc/rancher/k3s/k3s.yaml
         dest: "{{ playbook_dir }}/k3s-kubeconfig"
-        flat: yes
+        flat: true
       when: inventory_hostname == groups['all'][0]
 
     - name: CoreDNS helm | Deploy HA Chart
@@ -135,4 +135,4 @@
       ansible.builtin.systemd:
         name: k3s
         state: restarted
-        daemon_reload: yes
+        daemon_reload: true
