@@ -1,0 +1,78 @@
+- name: Bootstrap HA RKE2 Cluster
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
+
+  pre_tasks:
+    - name: Get number of control plane nodes from environment
+      ansible.builtin.set_fact:
+        num_control_nodes: "{{ lookup('env', 'NUMBER_OF_CONTROL_PLANE_NODES') | default('', true) }}"
+      run_once: true
+
+    - name: Calculate node index in inventory
+      ansible.builtin.set_fact:
+        node_index: "{{ groups['all'].index(inventory_hostname) }}"
+
+    - name: Set rke2_control_node fact based on NUMBER_OF_CONTROL_PLANE_NODES
+      ansible.builtin.set_fact:
+        rke2_control_node: >-
+          {{ (num_control_nodes == '' or num_control_nodes is not defined) or
+             (num_control_nodes | int > 0 and node_index < (num_control_nodes | int)) }}
+
+    - name: Get number of CPU cores for GKE-style reservations
+      ansible.builtin.command: nproc
+      register: cpu_cores_result
+      changed_when: false
+
+    - name: Calculate kube-reserved CPU using GKE formula
+      ansible.builtin.set_fact:
+        cpu_cores: "{{ cpu_cores_result.stdout | int }}"
+        reserved_cpu_m: >-
+          {%- set cores = cpu_cores_result.stdout | int -%}
+          {%- set total = 0 -%}
+          {%- if cores >= 1 -%}
+            {%- set total = total + 60 -%}
+            {%- if cores >= 2 -%}
+              {%- set total = total + 10 -%}
+              {%- if cores >= 4 -%}
+                {%- set total = total + 10 -%}
+                {%- if cores > 4 -%}
+                  {%- set total = total + ((cores - 4) * 2.5) | round(0, 'floor') | int -%}
+                {%- endif -%}
+              {%- elif cores == 3 -%}
+                {%- set total = total + 5 -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- else -%}
+            {%- set total = 60 -%}
+          {%- endif -%}
+          {{ total | int }}
+
+  roles:
+    - role: rancherfederal.rke2_ansible
+
+  post_tasks:
+    # -------------------------------------------------------------
+    # Deploy RKE2 CoreDNS HA HelmChartConfig manifest
+    # -------------------------------------------------------------
+    - name: Deploy RKE2 CoreDNS HA HelmChartConfig manifest
+      when:
+        - rke2_control_node | bool
+        - inventory_hostname == groups['all'][0]
+      ansible.builtin.template:
+        src: rke2-coredns-config.yaml.j2
+        dest: /var/lib/rancher/rke2/server/manifests/rke2-coredns-config.yaml
+        mode: "0644"
+
+    # -------------------------------------------------------------
+    # Deploy RKE2 Traefik HA HelmChartConfig manifest
+    # -------------------------------------------------------------
+    - name: Deploy RKE2 Traefik HA HelmChartConfig manifest
+      when:
+        - rke2_control_node | bool
+        - inventory_hostname == groups['all'][0]
+      ansible.builtin.template:
+        src: rke2-traefik-config.yaml.j2
+        dest: /var/lib/rancher/rke2/server/manifests/rke2-traefik-config.yaml
+        mode: "0644"

@@ -1,0 +1,32 @@
+# RKE2 Cluster Configuration Variables
+# These variables are used by the bootstrap-rke2.yml playbook
+
+# RKE2 version and basic configuration
+rke2_version: v1.30.0+rke2r1
+rke2_token: "{{ lookup('env', 'RKE2_TOKEN') }}"
+rke2_build_cluster: true
+
+# RKE2 server configuration
+# This generates /etc/rancher/rke2/config.yaml
+rke2_config:
+  # Networking
+  cni: cilium
+
+  # Kubeconfig permissions
+  write-kubeconfig-mode: "0644"
+
+  # CPU Manager Policy with GKE-style system reservations
+  # The reserved_cpu_m variable is calculated in the playbook
+  kubelet-arg:
+    - "cpu-manager-policy=static"
+    - "system-reserved=cpu={{ reserved_cpu_m }}m"
+
+  # Ingress Controller
+  ingress-controller: traefik
+
+  # Disable components we don't want
+  disable:
+    - rke2-ingress-nginx  # We use Traefik instead
+    - rke2-metrics-server  # May provide custom version later
+    - rke2-snapshot-controller  # Disable if not needed
+    - rke2-snapshot-validation-webhook  # Disable if not needed

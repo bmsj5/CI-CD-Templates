@@ -1,0 +1,37 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    # Configure Traefik as DaemonSet for 1-per-node coverage
+    deployment:
+      enabled: false
+    daemonset:
+      enabled: true
+
+    # Guaranteed QoS & CPU Pinning
+    resources:
+      requests:
+        cpu: "1"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "512Mi"
+
+    # Host networking for direct port binding
+    hostNetwork: true
+
+    # Service configuration
+    service:
+      enabled: false
+
+    # Ports configuration for host networking
+    ports:
+      web:
+        hostPort: 80
+        expose: true
+      websecure:
+        hostPort: 443
+        expose: true
