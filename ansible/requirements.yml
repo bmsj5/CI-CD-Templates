@@ -8,9 +8,9 @@ collections:
   - name: kubernetes.core
     version: ">=1.0.0"
   - name: rancherfederal.rke2_ansible
-    source: https://github.com/rancherfederal/rke2-ansible
+    source: https://github.com/rancherfederal/rke2-ansible.git
     type: git
-    version: v2.0.0
+    version: main
 
 roles:
   - name: geerlingguy.docker
