@@ -50,7 +50,7 @@
           {{ total | int }}
 
   roles:
-    - role: rancherfederal.rke2_ansible
+    - role: rancherfederal.rke2_ansible.rke2
 
   post_tasks:
     # -------------------------------------------------------------
