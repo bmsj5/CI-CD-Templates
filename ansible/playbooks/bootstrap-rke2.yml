@@ -3,6 +3,10 @@
   become: true
   vars_files:
     - group_vars/rke2.yml
+  vars:
+    # SSH settings to prevent multiplexing issues
+    ansible_ssh_pipelining: false
+    ansible_ssh_control_path: ""
 
   pre_tasks:
     - name: Get number of control plane nodes from environment

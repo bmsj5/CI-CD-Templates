@@ -86,7 +86,6 @@ runs:
 
         DOCKER_ARGS=(
           -v "$GITHUB_WORKSPACE:/workspace"
-          -e "ANSIBLE_CONFIG=/workspace/ansible/ansible.cfg"
           -e "ANSIBLE_HOSTS=${{ inputs.ansible_hosts }}"
           -e "ANSIBLE_USER=${{ inputs.ansible_user }}"
           -e "ANSIBLE_SSH_PRIVATE_KEY_FILE=/root/.ssh/id_rsa"
