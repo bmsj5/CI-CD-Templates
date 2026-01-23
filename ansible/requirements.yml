@@ -7,10 +7,6 @@ collections:
     version: 1.6.2
   - name: kubernetes.core
     version: 5.0.0
-  - name: rancherfederal.rke2_ansible
-    source: https://github.com/rancherfederal/rke2-ansible.git
-    type: git
-    version: v2.0.0
 
 roles:
   - name: geerlingguy.docker
@@ -19,3 +15,5 @@ roles:
     version: 2.7.0
   - name: xanmanning.k3s
     version: v3.6.2
+  - name: lablabs.rke2
+    version: 1.50.0

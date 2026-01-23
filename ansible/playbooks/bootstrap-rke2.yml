@@ -54,7 +54,7 @@
           {{ total | int }}
 
   roles:
-    - role: rancherfederal.rke2_ansible.rke2
+    - role: lablabs.rke2
 
   post_tasks:
     # -------------------------------------------------------------

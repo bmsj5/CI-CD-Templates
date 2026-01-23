@@ -2,25 +2,21 @@
 # These variables are used by the bootstrap-rke2.yml playbook
 
 # RKE2 version and basic configuration
-rke2_install_version: v1.35.0+rke2r1
+rke2_version: v1.35.0+rke2r1
 rke2_token: "{{ lookup('env', 'RKE2_TOKEN') }}"
 
-# RKE2 cluster-wide configuration
-# This generates /etc/rancher/rke2/config.yaml on each node
-cluster_rke2_config:
+# RKE2 configuration (lablabs.rke2 format)
+rke2_config:
   cni: cilium
   write-kubeconfig-mode: "0644"
   ingress-controller: traefik
-  profile: ""  # Empty profile to avoid CIS conditional issues
   disable:
     - rke2-ingress-nginx
     - rke2-snapshot-controller
     - rke2-snapshot-validation-webhook
 
-# Server group configuration (applied to rke2_servers group)
-group_rke2_config:
-  # CPU Manager Policy with GKE-style system reservations
-  # The reserved_cpu_m variable is calculated in the playbook
+# CPU Manager Policy with GKE-style system reservations
+rke2_server_options:
   kubelet-arg:
     - "cpu-manager-policy=static"
     - "system-reserved=cpu={{ reserved_cpu_m }}m" 
