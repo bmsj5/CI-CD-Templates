@@ -1,4 +1,4 @@
-- name: Deploy Core Infrastructure Services
+- name: Deploy cert-manager
   hosts: localhost
   connection: local
   gather_facts: false
@@ -8,12 +8,10 @@
       ansible.builtin.assert:
         that:
           - lookup('env', 'KUBECONFIG') != ''
-          - lookup('env', 'HELM_CHARTS_PATH') != ''
           - lookup('env', 'LETS_ENCRYPT_EMAIL') != ''
-        fail_msg: "KUBECONFIG, HELM_CHARTS_PATH, and LETS_ENCRYPT_EMAIL environment variables must be set"
+        fail_msg: "KUBECONFIG and LETS_ENCRYPT_EMAIL environment variables must be set"
 
   tasks:
-    # --- cert-manager Installation ---
     - name: Install cert-manager
       kubernetes.core.helm:
         name: cert-manager
@@ -23,11 +21,11 @@
         release_namespace: cert-manager
         create_namespace: true
         wait: true
-        timeout: 5m
+        timeout: "5m"
         set_values:
           - value: crds.enabled=true
             value_type: raw
-    
+
     - name: Create Let's Encrypt ClusterIssuer
       kubernetes.core.k8s:
         state: present
@@ -46,16 +44,3 @@
                 - http01:
                     ingress:
                       class: traefik
-
-    # --- Kube-State-Metrics Installation ---
-    - name: Install kube-state-metrics
-      kubernetes.core.helm:
-        name: kube-state-metrics
-        chart_ref: oci://ghcr.io/prometheus-community/charts/kube-state-metrics
-        chart_version: 7.0.0
-        release_namespace: kube-system
-        create_namespace: true
-        values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/kube-state-metrics/values.yml"
-        wait: true
-        timeout: 5m

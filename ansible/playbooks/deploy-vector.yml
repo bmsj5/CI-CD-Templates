@@ -3,6 +3,16 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'ZO_ROOT_USER_EMAIL') != ''
+          - lookup('env', 'ZO_ROOT_USER_PASSWORD') != ''
+        fail_msg: "KUBECONFIG, ZO_ROOT_USER_EMAIL, and ZO_ROOT_USER_PASSWORD environment variables must be set"
+
   tasks:
     - name: Create the 'vector' namespace
       kubernetes.core.k8s:

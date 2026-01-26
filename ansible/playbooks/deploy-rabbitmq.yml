@@ -2,6 +2,16 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'RABBITMQ_DEFAULT_USER') != ''
+          - lookup('env', 'RABBITMQ_DEFAULT_PASS') != ''
+        fail_msg: "KUBECONFIG, RABBITMQ_DEFAULT_USER, and RABBITMQ_DEFAULT_PASS environment variables must be set"
+
   tasks:
     - name: Create RabbitMQ namespace
       kubernetes.core.k8s:

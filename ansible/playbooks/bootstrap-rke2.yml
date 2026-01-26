@@ -4,6 +4,13 @@
   vars_files:
     - group_vars/rke2.yml
   pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'RKE2_TOKEN') != ''
+        fail_msg: "RKE2_TOKEN environment variable must be set"
+      run_once: true
+
     - name: Get number of control plane nodes from environment
       ansible.builtin.set_fact:
         num_control_nodes: "{{ lookup('env', 'NUMBER_OF_CONTROL_PLANE_NODES') | default('', true) }}"

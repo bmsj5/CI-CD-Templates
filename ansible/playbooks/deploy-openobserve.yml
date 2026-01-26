@@ -2,6 +2,17 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'HELM_CHARTS_PATH') != ''
+          - lookup('env', 'ZO_ROOT_USER_EMAIL') != ''
+          - lookup('env', 'ZO_ROOT_USER_PASSWORD') != ''
+        fail_msg: "KUBECONFIG, HELM_CHARTS_PATH, ZO_ROOT_USER_EMAIL, and ZO_ROOT_USER_PASSWORD environment variables must be set"
+
   tasks:
     - name: Deploy OpenObserve
       kubernetes.core.helm:

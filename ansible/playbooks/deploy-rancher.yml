@@ -1,0 +1,38 @@
+- name: Deploy Rancher Server
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'DOMAIN_NAME') != ''
+          - lookup('env', 'LETS_ENCRYPT_EMAIL') != ''
+          - lookup('env', 'RANCHER_BOOTSTRAP_PASSWORD') != ''
+        fail_msg: "All required environment variables must be set: KUBECONFIG, DOMAIN_NAME, LETS_ENCRYPT_EMAIL, RANCHER_BOOTSTRAP_PASSWORD"
+
+  tasks:
+    - name: Install Rancher Server
+      kubernetes.core.helm:
+        name: rancher
+        chart_ref: rancher
+        chart_repo_url: https://releases.rancher.com/server-charts/latest
+        chart_version: "2.13.1"
+        release_namespace: cattle-system
+        create_namespace: true
+        wait: true
+        timeout: "5m"
+        set_values:
+          - value: "hostname=rancher.{{ lookup('env', 'DOMAIN_NAME') }}"
+            value_type: raw
+          - value: ingress.tls.source=letsEncrypt
+            value_type: raw
+          - value: "letsEncrypt.email={{ lookup('env', 'LETS_ENCRYPT_EMAIL') }}"
+            value_type: raw
+          - value: letsEncrypt.ingress.class=traefik
+            value_type: raw
+          - value: "bootstrapPassword={{ lookup('env', 'RANCHER_BOOTSTRAP_PASSWORD') }}"
+            value_type: raw
+      no_log: true 

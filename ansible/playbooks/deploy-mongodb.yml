@@ -2,6 +2,16 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'HELM_CHARTS_PATH') != ''
+          - lookup('env', 'MONGO_INITDB_ROOT_PASSWORD') != ''
+        fail_msg: "KUBECONFIG, HELM_CHARTS_PATH, and MONGO_INITDB_ROOT_PASSWORD environment variables must be set"
+
   tasks:
     - name: Create MongoDB namespace
       kubernetes.core.k8s:

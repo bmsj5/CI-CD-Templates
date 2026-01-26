@@ -2,6 +2,15 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'ANSIBLE_HOSTS') != ''
+          - lookup('env', 'ANSIBLE_USER') != ''
+        fail_msg: "ANSIBLE_HOSTS and ANSIBLE_USER environment variables must be set"
+
   vars:
     ansible_hosts: "{{ lookup('env', 'ANSIBLE_HOSTS') }}"
     ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"

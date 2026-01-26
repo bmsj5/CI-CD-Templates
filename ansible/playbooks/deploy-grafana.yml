@@ -2,6 +2,19 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'HELM_CHARTS_PATH') != ''
+          - lookup('env', 'GRAFANA_DB_PASSWORD') != ''
+          - lookup('env', 'ZO_ROOT_USER_EMAIL') != ''
+          - lookup('env', 'ZO_ROOT_USER_PASSWORD') != ''
+          - lookup('env', 'GRAFANA_ADMIN_PASSWORD') != ''
+        fail_msg: "KUBECONFIG, HELM_CHARTS_PATH, GRAFANA_DB_PASSWORD, ZO_ROOT_USER_EMAIL, ZO_ROOT_USER_PASSWORD, and GRAFANA_ADMIN_PASSWORD environment variables must be set"
+
   tasks:
     - name: Create the 'grafana' namespace
       kubernetes.core.k8s:

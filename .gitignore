@@ -33,6 +33,7 @@ log/
 ansible*.cfg.tmp
 # Ansible local directory (created by ansible-playbook --connection=local)
 .ansible/
+inventory.ini
 
 # Kubernetes/Helm
 # Helm chart packages

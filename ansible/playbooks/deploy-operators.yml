@@ -2,6 +2,14 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+        fail_msg: "KUBECONFIG environment variable must be set"
+
   tasks:
     - name: Install CloudNativePG CRDs
       ansible.builtin.command: >

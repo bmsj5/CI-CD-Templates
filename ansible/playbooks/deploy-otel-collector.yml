@@ -3,6 +3,21 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'ZO_ROOT_USER_EMAIL') != ''
+          - lookup('env', 'ZO_ROOT_USER_PASSWORD') != ''
+          - lookup('env', 'APP_NAME') != ''
+          - lookup('env', 'APP_VERSION') != ''
+          - lookup('env', 'REGION') != ''
+          - lookup('env', 'CLUSTER_ID') != ''
+          - lookup('env', 'DEPLOYMENT_ENV') != ''
+        fail_msg: "KUBECONFIG, ZO_ROOT_USER_EMAIL, ZO_ROOT_USER_PASSWORD, APP_NAME, APP_VERSION, REGION, CLUSTER_ID, and DEPLOYMENT_ENV environment variables must be set"
+
   tasks:
     # ---------------------------------------------------------
     # Setup

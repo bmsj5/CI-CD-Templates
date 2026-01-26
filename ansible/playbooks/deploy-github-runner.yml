@@ -5,6 +5,17 @@
   vars_files:
     - group_vars/github-runners.yml
 
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'GITHUB_ORGANIZATION') != ''
+          - lookup('env', 'GITHUB_APP_ID') != ''
+          - lookup('env', 'GITHUB_APP_INSTALLATION_ID') != ''
+          - lookup('env', 'GITHUB_APP_PRIVATE_KEY') != ''
+        fail_msg: "KUBECONFIG, GITHUB_ORGANIZATION, GITHUB_APP_ID, GITHUB_APP_INSTALLATION_ID, and GITHUB_APP_PRIVATE_KEY environment variables must be set"
+
   tasks:
     # --- Runner Scale Set Deployment ---
     - name: Get organization name and GitHub App credentials from environment
