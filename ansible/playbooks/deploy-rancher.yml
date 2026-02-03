@@ -19,11 +19,11 @@
         name: rancher
         chart_ref: rancher
         chart_repo_url: https://releases.rancher.com/server-charts/latest
-        chart_version: "2.13.1"
+        chart_version: 2.13.2
         release_namespace: cattle-system
         create_namespace: true
         wait: true
-        timeout: "5m"
+        timeout: 5m
         set_values:
           - value: "hostname=rancher.{{ lookup('env', 'DOMAIN_NAME') }}"
             value_type: raw

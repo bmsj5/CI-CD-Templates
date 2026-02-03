@@ -17,9 +17,9 @@
         name: traefik
         chart_ref: traefik
         chart_repo_url: https://helm.traefik.io/traefik
-        chart_version: "39.0.0"
+        chart_version: 39.0.0
         release_namespace: kube-system
         wait: true
-        timeout: "5m"
+        timeout: 5m
         values_files:
           - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/traefik/values.yml"
