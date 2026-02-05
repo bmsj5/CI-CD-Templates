@@ -59,12 +59,10 @@
             name: otel-env-labels
             namespace: otel-collector
           data:
-            APP_NAME: "{{ lookup('env', 'APP_NAME') }}"
-            APP_VERSION: "{{ lookup('env', 'APP_VERSION') }}"
+            PROJECT_NAME: "{{ lookup('env', 'PROJECT_NAME') }}"
             REGION: "{{ lookup('env', 'REGION') }}"
             CLUSTER_ID: "{{ lookup('env', 'CLUSTER_ID') }}"
-            DEPLOYMENT_ENV: "{{ lookup('env', 'DEPLOYMENT_ENV') }}"
-
+            DEPLOYMENT_ENV: "{{ lookup('env', 'DEPLOYMENT_ENV') }}" 
     # ---------------------------------------------------------
     # OTEL Collector Gateway
     # ---------------------------------------------------------

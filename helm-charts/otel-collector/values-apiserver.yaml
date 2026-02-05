@@ -1,6 +1,5 @@
 # Dedicated collector for Kubernetes API server metrics
 # Deployment with 1 replica = exactly 1 collector scraping exactly 1 endpoint
-# No duplication, no hacks, no hash modding - just a simple single-replica deployment
 
 mode: deployment
 replicaCount: 1
@@ -36,21 +35,11 @@ service:
   enabled: false  # No need for service, this is internal only
 
 extraEnvs:
-  - name: OPENOBSERVE_AUTH_B64
-    valueFrom:
-      secretKeyRef:
-        name: openobserve-creds
-        key: auth_b64
-  - name: APP_NAME
+  - name: PROJECT_NAME
     valueFrom:
       configMapKeyRef:
         name: otel-env-labels
-        key: APP_NAME
-  - name: APP_VERSION
-    valueFrom:
-      configMapKeyRef:
-        name: otel-env-labels
-        key: APP_VERSION
+        key: PROJECT_NAME
   - name: REGION
     valueFrom:
       configMapKeyRef:
@@ -72,9 +61,6 @@ config:
     prometheus:
       config:
         scrape_configs:
-          # -----------------------------------------------------------------------
-          # KUBERNETES API SERVER - ONLY JOB IN THIS COLLECTOR
-          # -----------------------------------------------------------------------
           - job_name: 'kubernetes-apiserver'
             scrape_interval: 15s
             metrics_path: /metrics
@@ -82,11 +68,9 @@ config:
             tls_config:
               ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
               insecure_skip_verify: true
-            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-            
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token 
             kubernetes_sd_configs:
               - role: endpoints
-            
             relabel_configs:
               # Filter: Target the default/kubernetes service (The API Server)
               - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
@@ -103,11 +87,8 @@ config:
     # Add external labels as resource attributes
     resource:
       attributes:
-        - key: app.name
-          value: ${env:APP_NAME}
-          action: upsert
-        - key: app.version
-          value: ${env:APP_VERSION}
+        - key: project.name
+          value: ${env:PROJECT_NAME}
           action: upsert
         - key: region
           value: ${env:REGION}
@@ -146,7 +127,7 @@ config:
         queue_size: 20
       retry_on_failure:
         max_elapsed_time: 2m
-
+        
   service:
     pipelines:
       metrics:

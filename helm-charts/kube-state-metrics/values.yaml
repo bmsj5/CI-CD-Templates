@@ -1,5 +1,3 @@
-# Kube-State-Metrics Configuration
-
 resources:
   limits:
     cpu: 100m

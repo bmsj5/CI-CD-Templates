@@ -1,0 +1,25 @@
+- name: Deploy kube-state-metrics
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  pre_tasks:
+    - name: Ensure required environment variables
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'KUBECONFIG') != ''
+          - lookup('env', 'HELM_CHARTS_PATH') != ''
+        fail_msg: "KUBECONFIG and HELM_CHARTS_PATH environment variables must be set"
+
+  tasks:
+    - name: Install kube-state-metrics
+      kubernetes.core.helm:
+        name: kube-state-metrics
+        chart_ref: oci://ghcr.io/prometheus-community/charts/kube-state-metrics
+        chart_version: 7.0.0
+        release_namespace: kube-system
+        create_namespace: true
+        values_files:
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/kube-state-metrics/values.yml"
+        wait: true
+        timeout: 5m

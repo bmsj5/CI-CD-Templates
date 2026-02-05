@@ -21,13 +21,11 @@ config:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
-
   processors:
     memory_limiter:
       check_interval: 1s
       limit_percentage: 80
       spike_limit_percentage: 25
-
     # TAIL SAMPLING LOGIC
     tail_sampling:
       decision_wait: 10s
@@ -40,17 +38,16 @@ config:
         - name: probabilistic_10_percent
           type: probabilistic
           probabilistic: {sampling_percentage: 10}
-
     batch:
       timeout: 10s
-
+      
   exporters:
     otlp/traces:
       endpoint: tempo-distributor.tempo.svc.cluster.local:4317
       tls:
         insecure: true
       sending_queue:
-        queue_size: 5  # ~60 MB max (5 batches × ~12 MB per batch)
+        queue_size: 5 # ~60 MB max (5 batches × ~12 MB per batch)
       retry_on_failure:
         max_elapsed_time: 2m
 

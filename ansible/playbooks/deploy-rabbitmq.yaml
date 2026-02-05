@@ -40,7 +40,7 @@
                 memory: 768Mi
               requests:
                 cpu: 100m
-                memory: 256Mi
+                memory: 512Mi
             rabbitmq:
               additionalConfig: |
                 cluster_formation.peer_discovery_backend = k8s

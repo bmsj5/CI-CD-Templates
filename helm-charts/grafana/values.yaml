@@ -50,7 +50,7 @@ extraInitContainers:
     command: ["/bin/sh", "-c"]
     args:
       - |
-        echo "Installing Custom OpenObserve Plugin from fork..."
+        echo "Installing Custom OpenObserve Plugin..."
         WORKDIR="/var/lib/grafana/plugins"
         mkdir -p $WORKDIR
         
