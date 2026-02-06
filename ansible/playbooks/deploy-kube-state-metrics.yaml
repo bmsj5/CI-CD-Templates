@@ -20,6 +20,6 @@
         release_namespace: kube-system
         create_namespace: true
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/kube-state-metrics/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/kube-state-metrics/values.yaml"
         wait: true
         timeout: 5m

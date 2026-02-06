@@ -43,7 +43,7 @@
         wait: true
         timeout: 5m
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/redis/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/redis/values.yaml"
         set_values:
           - value: auth.existingSecret=redis-secrets
             value_type: string

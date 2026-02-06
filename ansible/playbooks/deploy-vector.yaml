@@ -44,4 +44,4 @@
         wait: true
         timeout: 5m
         values_files:
-          - "/workspace/helm-charts/vector/values.yml"
+          - "/workspace/helm-charts/vector/values.yaml"

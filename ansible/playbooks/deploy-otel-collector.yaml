@@ -76,7 +76,7 @@
         wait: true
         timeout: 5m
         values_files:
-          - "/workspace/helm-charts/otel-collector/values-gateway.yml"
+          - "/workspace/helm-charts/otel-collector/values-gateway.yaml"
 
     # ---------------------------------------------------------
     # OTEL Collector API Server
@@ -91,7 +91,7 @@
         wait: true
         timeout: 5m
         values_files:
-          - "/workspace/helm-charts/otel-collector/values-apiserver.yml"
+          - "/workspace/helm-charts/otel-collector/values-apiserver.yaml"
 
     # ---------------------------------------------------------
     # OTEL Collector Backend
@@ -106,4 +106,4 @@
         wait: true
         timeout: 5m
         values_files:
-          - "/workspace/helm-charts/otel-collector/values-backend.yml"
+          - "/workspace/helm-charts/otel-collector/values-backend.yaml"

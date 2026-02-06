@@ -1,5 +1,5 @@
 # K3s Cluster Configuration Variables
-# These variables are used by the bootstrap-k3s.yml playbook
+# These variables are used by the bootstrap-k3s.yaml playbook
 
 k3s_release_version: v1.35.0+k3s1
 k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"

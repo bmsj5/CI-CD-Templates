@@ -43,7 +43,7 @@ lint_roles() {
 # Function to lint playbooks
 lint_playbooks() {
     print_section "LINTING PLAYBOOKS"
-    for playbook in playbooks/*.yml; do
+    for playbook in playbooks/*.yaml; do
         if [ -f "$playbook" ]; then
             playbook_name=$(basename "$playbook")
             echo "LINTING PLAYBOOK: $playbook_name"

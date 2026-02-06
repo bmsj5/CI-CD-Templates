@@ -3,7 +3,7 @@
   connection: local
   gather_facts: false
   vars_files:
-    - group_vars/github-runners.yml
+    - group_vars/github-runners.yaml
 
   pre_tasks:
     - name: Ensure required environment variables

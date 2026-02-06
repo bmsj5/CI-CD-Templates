@@ -24,7 +24,7 @@
         create_namespace: true
         wait: false
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/openobserve/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/openobserve/values.yaml"
         set_values:
           - value: auth.ZO_ROOT_USER_EMAIL={{ lookup('env', 'ZO_ROOT_USER_EMAIL') }}
             value_type: string

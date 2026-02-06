@@ -132,8 +132,8 @@ podDisruptionBudget:
   minAvailable: 2
 
 # Datasources provisioning via ConfigMap (separate file)
-# The datasources.yml file is mounted as a ConfigMap
-# See helm-charts/grafana/datasources.yml for the datasource definitions
+# The datasources.yaml file is mounted as a ConfigMap
+# See helm-charts/grafana/datasources.yaml for the datasource definitions
 extraConfigmapMounts:
   - name: grafana-datasources
     mountPath: /etc/grafana/provisioning/datasources

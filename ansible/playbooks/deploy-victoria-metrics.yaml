@@ -22,5 +22,5 @@
         wait: true
         timeout: 5m
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/victoria-metrics/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/victoria-metrics/values.yaml"
 

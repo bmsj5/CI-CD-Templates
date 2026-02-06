@@ -47,7 +47,7 @@
     - name: Create PostgreSQL cluster for Grafana
       kubernetes.core.k8s:
         state: present
-        definition: "{{ lookup('file', lookup('env', 'HELM_CHARTS_PATH') + '/grafana/postgres-cluster.yml') | from_yaml }}"
+        definition: "{{ lookup('file', lookup('env', 'HELM_CHARTS_PATH') + '/grafana/postgres-cluster.yaml') | from_yaml }}"
 
     - name: Wait for Grafana PostgreSQL cluster to be ready
       kubernetes.core.k8s_info:
@@ -69,7 +69,7 @@
             name: grafana-datasources
             namespace: grafana
           data:
-            datasources.yaml: "{{ lookup('template', lookup('env', 'HELM_CHARTS_PATH') + '/grafana/datasources.yml') }}"
+            datasources.yaml: "{{ lookup('template', lookup('env', 'HELM_CHARTS_PATH') + '/grafana/datasources.yaml') }}"
       vars:
         openobserve_user: "{{ lookup('env', 'ZO_ROOT_USER_EMAIL') }}"
         openobserve_password: "{{ lookup('env', 'ZO_ROOT_USER_PASSWORD') }}"
@@ -85,7 +85,7 @@
         wait: true
         timeout: 10m
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/grafana/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/grafana/values.yaml"
         set_values:
           - value: "env.GF_DATABASE_PASSWORD={{ lookup('env', 'GRAFANA_DB_PASSWORD') }}"
             value_type: string

@@ -73,7 +73,7 @@
         wait: true
         timeout: 10m
         values_files:
-          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/mongodb/values.yml"
+          - "{{ lookup('env', 'HELM_CHARTS_PATH') }}/mongodb/values.yaml"
         set_values:
           - value: auth.existingSecret=mongodb-admin-password
             value_type: string

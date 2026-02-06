@@ -1,8 +1,8 @@
 # RKE2 Cluster Configuration Variables
-# These variables are used by the bootstrap-rke2.yml playbook
+# These variables are used by the bootstrap-rke2.yaml playbook
 
 # RKE2 Cluster Configuration Variables
-# These variables are used by the bootstrap-rke2.yml playbook
+# These variables are used by the bootstrap-rke2.yaml playbook
 
 # RKE2 version and basic configuration
 rke2_version: v1.35.0+rke2r1

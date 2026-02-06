@@ -2,7 +2,7 @@
   hosts: all
   become: true
   vars_files:
-    - group_vars/k3s.yml
+    - group_vars/k3s.yaml
 
   pre_tasks:
     - name: Ensure required environment variables

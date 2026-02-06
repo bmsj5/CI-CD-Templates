@@ -129,8 +129,8 @@ runs:
             fi
             
             # Run Playbooks
-            echo 'Running generate_inventory.yml...'
-            ansible-playbook templates/ansible/playbooks/generate_inventory.yml
+            echo 'Running generate_inventory.yaml...'
+            ansible-playbook templates/ansible/playbooks/generate_inventory.yaml
             
             echo \"Running \$PLAYBOOK_PATH...\"
             ansible-playbook -i ansible/inventory.ini \"\$PLAYBOOK_PATH\"
