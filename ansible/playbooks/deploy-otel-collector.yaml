@@ -68,7 +68,7 @@
     # ---------------------------------------------------------
     - name: Deploy OTEL Collector Gateway
       kubernetes.core.helm:
-        name: otel-collector
+        name: gateway
         chart_ref: oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-collector
         chart_version: 0.142.1
         release_namespace: otel-collector
@@ -83,7 +83,7 @@
     # ---------------------------------------------------------
     - name: Deploy OTEL Collector for API Server (Single Replica)
       kubernetes.core.helm:
-        name: otel-collector-apiserver
+        name: apiserver
         chart_ref: oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-collector
         chart_version: 0.142.1
         release_namespace: otel-collector
@@ -98,7 +98,7 @@
     # ---------------------------------------------------------
     - name: Deploy OTEL Collector Backend (Tail Sampling)
       kubernetes.core.helm:
-        name: otel-collector-backend
+        name: backend
         chart_ref: oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-collector
         chart_version: 0.142.1
         release_namespace: otel-collector

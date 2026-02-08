@@ -35,4 +35,8 @@
             value_type: raw
           - value: "bootstrapPassword={{ lookup('env', 'RANCHER_BOOTSTRAP_PASSWORD') }}"
             value_type: raw
+          # Let's Encrypt: agents use OS trust store (no /etc/kubernetes/ssl/certs/serverca on RKE2/K3s)
+          # See https://ranchermanager.docs.rancher.com/getting-started/installation-and-upgrade/installation-references/tls-settings#agent-tls-enforcement
+          - value: agentTLSMode=system-store
+            value_type: raw
       no_log: true 
