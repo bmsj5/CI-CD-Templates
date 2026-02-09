@@ -1,5 +1,6 @@
 # This is the main configuration for the OpenObserve Helm chart
 # We will enable all the sub-charts to create a self-contained cluster.
+# Required secrets: see required-secrets.yaml in this directory.
 
 resources:
   limits:
@@ -31,42 +32,46 @@ config:
   ZO_S3_BUCKET_NAME: "openobserve-logs" # You can change this if you want
 
 auth:
-  ZO_ROOT_USER_EMAIL: ""
-  ZO_ROOT_USER_PASSWORD: ""
+  existingSecret: "openobserve-root-creds"
 
-# PostgreSQL sub-chart settings
-postgresql:
+postgres:
   enabled: true
-  architecture: "replication"
-  replicas: 3
-  persistence:
-    size: 1Gi 
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 50m
-      memory: 128Mi
-  
+  spec:
+    instances: 3
+    storage:
+      size: 1Gi
+      storageClass: local-path
+
 ingester:
   persistence:
     size: 10Gi
+    storageClass: local-path
 
 querier:
   persistence:
     size: 10Gi
+    storageClass: local-path
 
 alertmanager:
   persistence:
     size: 1Gi
+    storageClass: local-path
 
-# NATS sub-chart settings
+# NATS: chart uses nats.config.jetstream.fileStore.pvc
 nats:
   enabled: true
-  replicas: 3 
-  persistence:
-    size: 1Gi
+  config:
+    cluster:
+      enabled: true
+      replicas: 3
+    jetstream:
+      enabled: true
+      fileStore:
+        enabled: true
+        pvc:
+          enabled: true
+          size: 5Gi
+          storageClassName: local-path
   resources:
     limits:
       cpu: 100m
@@ -81,6 +86,7 @@ minio:
   replicas: 3
   persistence:
     size: 40Gi
+    storageClass: local-path
   resources:
     limits:
       cpu: 200m
@@ -88,33 +94,3 @@ minio:
     requests:
       cpu: 50m
       memory: 256Mi
-
-ingress:
-  enabled: true
-  
-  className: traefik
-  
-  # This tells cert-manager to create a certificate
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-
-    # Nullify the chart's conflicting defaults
-    kubernetes.io/tls-acme: null
-    cert-manager.io/issuer: null
-    nginx.ingress.kubernetes.io/enable-cors: null
-    nginx.ingress.kubernetes.io/enable-websocket: null
-    nginx.ingress.kubernetes.io/proxy-http-version: null
-    nginx.ingress.kubernetes.io/proxy-set-headers: null
-  
-  hosts:
-    - host: "openobserve.skiesdota.ru"
-      paths:
-        - path: /
-          pathType: Prefix          
-  # This tells the Ingress to use the new certificate
-  tls:
-    - hosts:
-        - "openobserve.skiesdota.ru"
-      # cert-manager will create this secret for you
-      secretName: openobserve-tls-secret
-

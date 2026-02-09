@@ -18,7 +18,6 @@ presets:
     enabled: true
 
 clusterRole:
-  # create is automatically true when presets are enabled, but harmless to keep explicit
   create: true
   rules:
     # Additional permissions beyond what presets provide:

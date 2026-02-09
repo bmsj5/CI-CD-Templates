@@ -60,8 +60,6 @@ extraInitContainers:
         # -d specifies the target directory
         unzip -o /tmp/plugin.zip -d $WORKDIR
         
-        # Cleanup
-        rm /tmp/plugin.zip
         echo "Plugin installed successfully."
     volumeMounts:
       - name: openobserve-plugin-storage
