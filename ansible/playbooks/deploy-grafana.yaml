@@ -30,7 +30,7 @@
       register: grafana_db_secret_check
       ignore_errors: true
 
-    - name: Create Grafana database password secret
+    - name: Create Grafana database credentials secret
       kubernetes.core.k8s:
         apply: true
         definition:
@@ -41,6 +41,7 @@
             namespace: grafana
           type: Opaque
           stringData:
+            username: grafana
             password: "{{ lookup('env', 'GRAFANA_DB_PASSWORD') }}"
       no_log: true
 
