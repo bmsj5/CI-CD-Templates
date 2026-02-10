@@ -43,10 +43,10 @@
           apiVersion: v1
           kind: Secret
           metadata:
-            name: openobserve-creds
+            name: openobserve-auth-creds
             namespace: otel-collector
           stringData:
-            auth_b64: "Basic {{ openobserve_auth_b64 }}"
+            auth_b64: "{{ openobserve_auth_b64 }}"
       no_log: true
 
     - name: Create ConfigMap with environment labels

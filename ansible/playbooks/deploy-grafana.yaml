@@ -39,7 +39,7 @@
           metadata:
             name: grafana-db-pass-secret
             namespace: grafana
-          type: Opaque
+          type: kubernetes.io/basic-auth
           stringData:
             username: grafana
             password: "{{ lookup('env', 'GRAFANA_DB_PASSWORD') }}"
