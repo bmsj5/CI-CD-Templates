@@ -38,22 +38,22 @@ extraEnvs:
   - name: PROJECT_NAME
     valueFrom:
       configMapKeyRef:
-        name: otel-env-labels
+        name: cluster-labels
         key: PROJECT_NAME
   - name: REGION
     valueFrom:
       configMapKeyRef:
-        name: otel-env-labels
+        name: cluster-labels
         key: REGION
   - name: CLUSTER_ID
     valueFrom:
       configMapKeyRef:
-        name: otel-env-labels
+        name: cluster-labels
         key: CLUSTER_ID
   - name: DEPLOYMENT_ENV
     valueFrom:
       configMapKeyRef:
-        name: otel-env-labels
+        name: cluster-labels
         key: DEPLOYMENT_ENV
 
 config:
