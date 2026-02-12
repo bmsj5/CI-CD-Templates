@@ -40,12 +40,12 @@ env:
   # Plugin installation (synchronous - ensures plugins are ready before Grafana starts)
   GF_PLUGINS_PREINSTALL_SYNC: victoriametrics-metrics-datasource
   # Session settings
-  GF_SESSION_COOKIE_MAX_AGE: 315360000  # 10 years
-  GF_SECURITY_LOGIN_REMEMBER_DAYS: 3650  # 10 years
+  GF_SESSION_COOKIE_MAX_AGE: "315360000"  # 10 years
+  GF_SECURITY_LOGIN_REMEMBER_DAYS: "3650"  # 10 years
   # Auth session lifetime settings
   GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: 3650d  # 10 years inactive
   GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: 3650d  # 10 years total
-  GF_SECURITY_COOKIE_SECURE: true 
+  GF_SECURITY_COOKIE_SECURE: "true" 
   GF_SECURITY_COOKIE_SAMESITE: lax
   # Logging
   GF_LOG_LEVEL: warn
