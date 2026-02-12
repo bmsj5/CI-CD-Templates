@@ -23,45 +23,50 @@ clusterRole:
   create: true
   rules:
     # Permission to scrape API server metrics endpoint
-    - nonResourceURLs: ["/metrics"]
-      verbs: ["get"]
+    - nonResourceURLs: [/metrics]
+      verbs: [get]
     # Permissions for Kubernetes service discovery (endpoints role)
     # Required for kubernetes_sd_configs to discover API server endpoints
     - apiGroups: [""]
-      resources: ["endpoints", "services"]
-      verbs: ["get", "list", "watch"]
+      resources: [endpoints, services]
+      verbs: [get, list, watch]
 
 service:
   enabled: false  # No need for service, this is internal only
 
 extraEnvs:
-  - name: PROJECT_NAME
+  - name: PROJECT
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: PROJECT_NAME
+        key: project
+  - name: APP
+    valueFrom:
+      configMapKeyRef:
+        name: cluster-labels
+        key: app
   - name: REGION
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: REGION
+        key: region
   - name: CLUSTER_ID
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: CLUSTER_ID
-  - name: DEPLOYMENT_ENV
+        key: cluster.id
+  - name: ENV
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: DEPLOYMENT_ENV
+        key: env
 
 config:
   receivers:
     prometheus:
       config:
         scrape_configs:
-          - job_name: 'kubernetes-apiserver'
+          - job_name: kubernetes-apiserver
             scrape_interval: 15s
             metrics_path: /metrics
             scheme: https
@@ -80,15 +85,18 @@ config:
             metric_relabel_configs:
               # Keep only essential API server metrics used in Grafana dashboard
               - source_labels: [__name__]
-                regex: '(apiserver_(requested_deprecated_apis|request_total|request_duration_seconds_(sum|count))|workqueue_depth|process_(cpu_seconds_total|resident_memory_bytes)|up)'
+                regex: (apiserver_(requested_deprecated_apis|request_total|request_duration_seconds_(sum|count))|workqueue_depth|process_(cpu_seconds_total|resident_memory_bytes)|up)
                 action: keep
 
   processors:
     # Add external labels as resource attributes
     resource:
       attributes:
-        - key: project.name
-          value: ${env:PROJECT_NAME}
+        - key: project
+          value: ${env:PROJECT}
+          action: upsert
+        - key: app
+          value: ${env:APP}
           action: upsert
         - key: region
           value: ${env:REGION}
@@ -97,7 +105,7 @@ config:
           value: ${env:CLUSTER_ID}
           action: upsert
         - key: env
-          value: ${env:DEPLOYMENT_ENV}
+          value: ${env:ENV}
           action: upsert
     # Convert these attributes to strings
     transform:
@@ -118,7 +126,7 @@ config:
 
   exporters:
     prometheusremotewrite:
-      endpoint: "http://vm-vminsert.victoria-metrics.svc.cluster.local:8480/insert/0/prometheus"
+      endpoint: http://vm-vminsert.victoria-metrics.svc.cluster.local:8480/insert/0/prometheus
       tls:
         insecure: true
       resource_to_telemetry_conversion:

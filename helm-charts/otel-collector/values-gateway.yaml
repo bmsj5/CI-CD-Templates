@@ -24,19 +24,19 @@ clusterRole:
     # - loadbalancing exporter needs to discover backend pods via K8s service discovery
     # - prometheus receiver with kubernetes_sd_configs needs pod/node discovery
     - apiGroups: [""]
-      resources: ["pods", "endpoints", "nodes", "namespaces", "services"]
-      verbs: ["get", "watch", "list"]
+      resources: [pods, endpoints, nodes, namespaces, services]
+      verbs: [get, watch, list]
     # Permissions for service discovery (endpointslices)
-    - apiGroups: ["discovery.k8s.io"]
-      resources: ["endpointslices"]
-      verbs: ["get", "list", "watch"]
+    - apiGroups: [discovery.k8s.io]
+      resources: [endpointslices]
+      verbs: [get, list, watch]
     # Permission to scrape API server metrics endpoint
-    - nonResourceURLs: ["/metrics"]
-      verbs: ["get"]
+    - nonResourceURLs: [/metrics]
+      verbs: [get]
       
 service:
   enabled: true
-  type: ClusterIP
+  type: clusterIP
   internalTrafficPolicy: Local
 
 extraEnvs:
@@ -49,26 +49,31 @@ extraEnvs:
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
-  - name: PROJECT_NAME
+  - name: PROJECT
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: PROJECT_NAME
+        key: project
+  - name: APP
+    valueFrom:
+      configMapKeyRef:
+        name: cluster-labels
+        key: app
   - name: REGION
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: REGION
+        key: region
   - name: CLUSTER_ID
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: CLUSTER_ID
-  - name: DEPLOYMENT_ENV
+        key: cluster.id
+  - name: ENV
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: DEPLOYMENT_ENV
+        key: env
 
 config:
   receivers:
@@ -79,7 +84,7 @@ config:
     kubeletstats:
       collection_interval: 15s
       auth_type: serviceAccount
-      endpoint: 'https://${env:K8S_NODE_NAME}:10250'
+      endpoint: "https://${env:K8S_NODE_NAME}:10250"
       insecure_skip_verify: true
       metric_groups:
         - node
@@ -92,7 +97,7 @@ config:
           # -----------------------------------------------------------------------
           # MONGODB
           # -----------------------------------------------------------------------
-          - job_name: 'mongodb-exporter'
+          - job_name: mongodb-exporter
             scrape_interval: 30s
             scrape_timeout: 25s
             metrics_path: /metrics
@@ -117,13 +122,13 @@ config:
             metric_relabel_configs:
               # Keep essential MongoDB metrics for Grafana dashboard
               - source_labels: [__name__]
-                regex: 'mongodb_(connections|instance_uptime_seconds|op_counters_total|mongod_op_latencies.*|memory.*|mongod_replset_(number_of_members|oplog_head_timestamp)|rs_members_state|ss_network_bytes(In|Out)|mongod_metrics_document_total)'
+                regex: mongodb_(connections|instance_uptime_seconds|op_counters_total|mongod_op_latencies.*|memory.*|mongod_replset_(number_of_members|oplog_head_timestamp)|rs_members_state|ss_network_bytes(In|Out)|mongod_metrics_document_total)
                 action: keep                        
 
           # -----------------------------------------------------------------------
           # REDIS
           # -----------------------------------------------------------------------
-          - job_name: 'redis-exporter'
+          - job_name: redis-exporter
             scrape_interval: 15s
             metrics_path: /metrics
             
@@ -147,13 +152,13 @@ config:
             metric_relabel_configs:
               # Keep essential Redis metrics for Grafana dashboard
               - source_labels: [__name__]
-                regex: 'redis_(uptime_in_seconds|connected_clients|config_maxclients|memory_(used_bytes|max_bytes|used_peak_bytes|used_lua_bytes|used_dataset_bytes|used_overhead_bytes|used_rss_bytes)|commands_(processed_total|duration_seconds_total)|keyspace_(hits_total|misses_total)|net_(input_bytes_total|output_bytes_total)|db_(keys|avg_ttl_seconds)|expired_keys_total|evicted_keys_total|blocked_clients|rejected_connections_total|slowlog_last_id|cpu_(sys|user)_(seconds_total|children_seconds_total))'
+                regex: redis_(uptime_in_seconds|connected_clients|config_maxclients|memory_(used_bytes|max_bytes|used_peak_bytes|used_lua_bytes|used_dataset_bytes|used_overhead_bytes|used_rss_bytes)|commands_(processed_total|duration_seconds_total)|keyspace_(hits_total|misses_total)|net_(input_bytes_total|output_bytes_total)|db_(keys|avg_ttl_seconds)|expired_keys_total|evicted_keys_total|blocked_clients|rejected_connections_total|slowlog_last_id|cpu_(sys|user)_(seconds_total|children_seconds_total))
                 action: keep                              
           
           # -----------------------------------------------------------------------
           # RABBITMQ
           # -----------------------------------------------------------------------
-          - job_name: 'rabbitmq-metrics'
+          - job_name: rabbitmq-metrics
             scrape_interval: 15s
             metrics_path: /metrics
             
@@ -176,13 +181,13 @@ config:
 
             metric_relabel_configs:
               - source_labels: [__name__]
-                regex: 'rabbitmq_(queue_(messages(_(ready|unacked))?|consumers)|queues(_declared_total|_created_total|_deleted_total)?|node_(memory|disk)|connections(_opened_total|_closed_total)?|channels(_opened_total|_closed_total)?|exchanges|global_(publishers|consumers|messages_(received_total|routed_total|unroutable_dropped_total|unroutable_returned_total|received_confirm_total|confirmed_total|delivered_total|delivered_consume_manual_ack_total|acknowledged_total|get_empty_total|redelivered_total|delivered_consume_auto_ack_total|delivered_get_auto_ack_total|delivered_get_manual_ack_total))|resident_memory_limit_bytes|process_(open|max)_fds|process_resident_memory_bytes|disk_space_available_bytes|erlang_uptime_seconds)'
+                regex: rabbitmq_(queue_(messages(_(ready|unacked))?|consumers)|queues(_declared_total|_created_total|_deleted_total)?|node_(memory|disk)|connections(_opened_total|_closed_total)?|channels(_opened_total|_closed_total)?|exchanges|global_(publishers|consumers|messages_(received_total|routed_total|unroutable_dropped_total|unroutable_returned_total|received_confirm_total|confirmed_total|delivered_total|delivered_consume_manual_ack_total|acknowledged_total|get_empty_total|redelivered_total|delivered_consume_auto_ack_total|delivered_get_auto_ack_total|delivered_get_manual_ack_total))|resident_memory_limit_bytes|process_(open|max)_fds|process_resident_memory_bytes|disk_space_available_bytes|erlang_uptime_seconds)
                 action: keep
 
           # -----------------------------------------------------------------------
           # KUBE-STATE-METRICS (Cluster State Metrics)
           # -----------------------------------------------------------------------
-          - job_name: 'kube-state-metrics'
+          - job_name: kube-state-metrics
             scrape_interval: 15s
             metrics_path: /metrics
             honor_labels: true  # KSM uses well-defined labels, honor them
@@ -194,12 +199,12 @@ config:
               # 1. Filter: Only kube-state-metrics pods
               # Match either modern label (app.kubernetes.io/name)
               - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
-                separator: ";"
-                regex: ".*kube-state-metrics.*"
+                separator: ;
+                regex: .*kube-state-metrics.*
                 action: keep  
               # 2. Filter: Target the metrics port (typically 8080, sometimes 8081)
               - source_labels: [__meta_kubernetes_pod_container_port_number]
-                regex: "(8080|8081)"
+                regex: (8080|8081)
                 action: keep
               # Note: __address__ is automatically set to <pod_ip>:<port> by kubernetes_sd_configs
               # 3. Filter: Only scrape KSM pods on THIS node (prevents duplicates from DaemonSet)
@@ -212,13 +217,13 @@ config:
             metric_relabel_configs:
               # Keep essential cluster state metrics for Grafana dashboard
               - source_labels: [__name__]
-                regex: '(kube_(deployment_(spec_replicas|status_replicas|status_replicas_(available|unavailable|ready)|status_observed_generation|metadata_generation|labels)|replicaset_(spec_replicas|status_replicas|status_ready_replicas)|pod_(status_(phase|ready|condition|qos_class|reason|scheduled)|container_(status_(restarts_total|ready|waiting|waiting_reason|running|terminated|last_terminated_reason|last_terminated_exitcode)|resource_(requests|limits)|info)|spec_volumes_persistentvolumeclaim_info|info)|node_(status_(condition|allocatable|capacity)|info)|namespace_(labels|annotations|created)|service_(info|spec_type)|endpoint_(info|address_(available|not_ready))|ingress_info|daemonset_(status_(desired_number_scheduled|number_ready|number_available|number_misscheduled)|labels)|statefulset_(replicas|status_replicas|status_replicas_ready|labels)|cronjob_info|job_status_(failed|succeeded|active)|horizontalpodautoscaler_(status_(current_replicas|desired_replicas)|info)|persistentvolumeclaim_(status_(phase|resource_requests_storage_bytes|capacity_bytes)|info)|configmap_info|secret_info|networkpolicy_labels))'
+                regex: kube
                 action: keep
           
           # -----------------------------------------------------------------------
           # COREDNS
           # -----------------------------------------------------------------------
-          - job_name: 'coredns'
+          - job_name: coredns
             scrape_interval: 15s
             metrics_path: /metrics
             
@@ -242,13 +247,13 @@ config:
             metric_relabel_configs:
               # Keep essential CoreDNS metrics
               - source_labels: [__name__]
-                regex: '(coredns_(dns_request_duration_seconds_.*|dns_requests_total|dns_responses_total|dns_request_size_bytes_.*|dns_response_size_bytes_.*|proxy_request_duration_seconds_.*|panic_count_total|cache_.*)|process_cpu_seconds_total|process_resident_memory_bytes|up)'
+                regex: coredns_(dns_request_duration_seconds_.*|dns_requests_total|dns_responses_total|dns_request_size_bytes_.*|dns_response_size_bytes_.*|proxy_request_duration_seconds_.*|panic_count_total|cache_.*)|process_cpu_seconds_total|process_resident_memory_bytes|up
                 action: keep
 
           # -----------------------------------------------------------------------
           # TRAEFIK
           # -----------------------------------------------------------------------
-          - job_name: 'traefik'
+          - job_name: traefik
             scrape_interval: 15s
             metrics_path: /metrics
             
@@ -272,15 +277,18 @@ config:
             metric_relabel_configs:
               # Keep essential Traefik metrics
               - source_labels: [__name__]
-                regex: 'traefik_(entrypoint_(requests_total|request_duration_seconds_.*)|service_(requests_total|request_duration_seconds_.*|open_connections|requests_bytes_total|responses_bytes_total)|config_reloads_total)'
+                regex: traefik_(entrypoint_(requests_total|request_duration_seconds_.*)|service_(requests_total|request_duration_seconds_.*|open_connections|requests_bytes_total|responses_bytes_total)|config_reloads_total)
                 action: keep
 
   processors:
     # Add external labels as resource attributes
     resource:
       attributes:
-        - key: project.name
-          value: ${env:PROJECT_NAME}
+        - key: project
+          value: ${env:PROJECT}
+          action: upsert
+        - key: app
+          value: ${env:APP}
           action: upsert
         - key: region
           value: ${env:REGION}
@@ -289,7 +297,7 @@ config:
           value: ${env:CLUSTER_ID}
           action: upsert
         - key: env
-          value: ${env:DEPLOYMENT_ENV}
+          value: ${env:ENV}
           action: upsert
     # Convert these attributes to strings
     transform:
@@ -318,7 +326,7 @@ config:
 
   exporters:
     prometheusremotewrite:
-      endpoint: "http://vm-vminsert.victoria-metrics.svc.cluster.local:8480/insert/0/prometheus"
+      endpoint: http://vm-vminsert.victoria-metrics.svc.cluster.local:8480/insert/0/prometheus
       tls:
         insecure: true
       resource_to_telemetry_conversion:
@@ -333,19 +341,19 @@ config:
       tls:
         insecure: true
       headers:
-        organization: "SkiesDota"
-        stream-name: "services"
-        Authorization: "Basic ${env:OPENOBSERVE_AUTH_B64}"
+        organization: SkiesDota
+        stream-name: services
+        Authorization: Basic ${env:OPENOBSERVE_AUTH_B64}
       sending_queue:
         queue_size: 5 # ~60 MB max (5 batches × ~12 MB per batch)
       retry_on_failure:
         max_elapsed_time: 2m
 
     loadbalancing:
-      routing_key: "traceID"
+      routing_key: traceID
       resolver:
         k8s:
-          service: "otel-collector-backend-opentelemetry-collector"
+          service: otel-collector-backend-opentelemetry-collector
           ports: [4317]
       protocol:
         otlp:

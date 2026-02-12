@@ -13,26 +13,26 @@ resources:
 # OpenObserve Application Configuration
 config:
   # Tells OpenObserve to run in HA mode
-  ZO_LOCAL_MODE: "false"
+  ZO_LOCAL_MODE: false
   
   # --- Metadata Store (PostgreSQL) ---
   # We are using the built-in PostgreSQL sub-chart.
   # The chart is smart and will automatically configure the
   # DSN (connection string) when postgresql.enabled is true.
-  ZO_META_STORE: "postgres"
+  ZO_META_STORE: postgres
 
   # --- Cluster Coordinator (NATS) ---
   # We are using the built-in NATS sub-chart.
   # The chart will automatically configure the NATS server URLs.
-  ZO_CLUSTER_COORDINATOR: "nats"
+  ZO_CLUSTER_COORDINATOR: nats
 
   # --- Object Storage (MinIO) ---
   # We are using the built-in MinIO sub-chart.
   # The chart will automatically configure the S3 endpoint and keys.
-  ZO_S3_BUCKET_NAME: "openobserve-logs" # You can change this if you want
+  ZO_S3_BUCKET_NAME: openobserve-logs # You can change this if you want
 
 auth:
-  existingSecret: "openobserve-root-creds"
+  existingSecret: openobserve-root-creds
 
 postgres:
   enabled: true

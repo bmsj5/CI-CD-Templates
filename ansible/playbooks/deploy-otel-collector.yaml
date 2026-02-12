@@ -59,10 +59,10 @@
             name: cluster-labels
             namespace: otel-collector
           data:
-            PROJECT_NAME: "{{ lookup('env', 'PROJECT_NAME') }}"
-            REGION: "{{ lookup('env', 'REGION') }}"
-            CLUSTER_ID: "{{ lookup('env', 'CLUSTER_ID') }}"
-            DEPLOYMENT_ENV: "{{ lookup('env', 'DEPLOYMENT_ENV') }}" 
+            project: "{{ lookup('env', 'PROJECT_NAME') }}"
+            region: "{{ lookup('env', 'REGION') }}"
+            cluster_id: "{{ lookup('env', 'CLUSTER_ID') }}"
+            env: "{{ lookup('env', 'DEPLOYMENT_ENV') }}" 
     # ---------------------------------------------------------
     # OTEL Collector Gateway
     # ---------------------------------------------------------

@@ -24,8 +24,9 @@ datasources:
     url: http://o2-openobserve-router.openobserve.svc:5080
     access: proxy
     isDefault: false
-    user: "{{ openobserve_user }}"  # Injected by Ansible: lookup('env', 'ZO_ROOT_USER_EMAIL')
     jsonData:
-      database: "SkiesDota"  # Organization name
+      database: SkiesDota  # Organization name
     secureJsonData:
+      # Injected by Ansible
+      user: "{{ openobserve_user }}"
       password: "{{ openobserve_password }}"

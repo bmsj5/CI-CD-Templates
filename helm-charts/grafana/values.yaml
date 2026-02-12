@@ -1,6 +1,18 @@
 # Grafana HA Configuration
 
+# Admin credentials (will be overridden by Ansible)
+adminUser: ""
+adminPassword: ""
+
 replicas: 3
+
+persistence:
+  enabled: false
+
+# Pod disruption budget for HA
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
 
 grafana.ini:
   plugins:
@@ -26,17 +38,17 @@ env:
   # Session storage (MUST use database for HA)
   GF_SESSION_PROVIDER: database
   # Plugin installation (synchronous - ensures plugins are ready before Grafana starts)
-  GF_PLUGINS_PREINSTALL_SYNC: "victoriametrics-metrics-datasource"
+  GF_PLUGINS_PREINSTALL_SYNC: victoriametrics-metrics-datasource
   # Session settings
-  GF_SESSION_COOKIE_MAX_AGE: "315360000"  # 10 years
-  GF_SECURITY_LOGIN_REMEMBER_DAYS: "3650"  # 10 years
+  GF_SESSION_COOKIE_MAX_AGE: 315360000  # 10 years
+  GF_SECURITY_LOGIN_REMEMBER_DAYS: 3650  # 10 years
   # Auth session lifetime settings
-  GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: "3650d"  # 10 years inactive
-  GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: "3650d"  # 10 years total
-  GF_SECURITY_COOKIE_SECURE: "true" 
-  GF_SECURITY_COOKIE_SAMESITE: "lax"
+  GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: 3650d  # 10 years inactive
+  GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: 3650d  # 10 years total
+  GF_SECURITY_COOKIE_SECURE: true 
+  GF_SECURITY_COOKIE_SAMESITE: lax
   # Logging
-  GF_LOG_LEVEL: "warn"
+  GF_LOG_LEVEL: warn
 
 # SHARED VOLUME FOR MANUAL PLUGINS
 extraVolumes:
@@ -70,65 +82,6 @@ extraVolumeMounts:
   - name: openobserve-plugin-storage
     mountPath: /var/lib/grafana/plugins
 
-# Admin credentials (will be overridden by Ansible)
-adminUser: ""
-adminPassword: ""
-
-# Ingress configuration
-ingress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  path: /
-  pathType: Prefix
-  hosts:
-    - grafana.skiesdota.ru
-  tls:
-    - secretName: grafana-tls-secret
-      hosts:
-        - grafana.skiesdota.ru
-
-# Service configuration
-service:
-  type: ClusterIP
-  port: 80
-
-persistence:
-  enabled: false
-
-initChownData:
-  enabled: false
-
-# Service account
-serviceAccount:
-  create: true
-  name: ""
-
-# Readiness and liveness probes for better stability
-readinessProbe:
-  httpGet:
-    path: /api/health
-    port: 3000
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 30
-  failureThreshold: 3
-
-livenessProbe:
-  httpGet:
-    path: /api/health
-    port: 3000
-  initialDelaySeconds: 60
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 3
-
-# Pod disruption budget for HA
-podDisruptionBudget:
-  enabled: true
-  minAvailable: 2
-
 # Datasources provisioning via ConfigMap (separate file)
 # The datasources.yaml file is mounted as a ConfigMap
 # See helm-charts/grafana/datasources.yaml for the datasource definitions
@@ -137,3 +90,18 @@ extraConfigmapMounts:
     mountPath: /etc/grafana/provisioning/datasources
     configMap: grafana-datasources
     readOnly: true
+
+# Ingress configuration
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  path: /
+  pathType: Prefix
+  hosts:
+    - grafana.skiesdota.ru
+  tls:
+    - secretName: grafana-tls-secret
+      hosts:
+        - grafana.skiesdota.ru

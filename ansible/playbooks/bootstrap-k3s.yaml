@@ -40,7 +40,7 @@
       ansible.builtin.file:
         path: /etc/rancher/k3s/config.yaml.d
         state: directory
-        mode: "0755"
+        mode: 0755
 
     - name: Get number of CPU cores
       ansible.builtin.command: nproc
@@ -84,7 +84,7 @@
           kubelet-arg:
             - "cpu-manager-policy=static"
             - "system-reserved=cpu={{ reserved_cpu_m }}m"
-        mode: "0644"
+        mode: 0644
       notify: Restart K3s
 
     # -------------------------------------------------------------
@@ -97,7 +97,7 @@
       ansible.builtin.template:
         src: traefik-ha.yaml.j2
         dest: /var/lib/rancher/k3s/server/manifests/traefik-ha.yaml
-        mode: "0644"
+        mode: 0644
     
     # -------------------------------------------------------------
     # Deploy CoreDNS HA via Helm Module

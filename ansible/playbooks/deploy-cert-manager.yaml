@@ -21,7 +21,7 @@
         release_namespace: cert-manager
         create_namespace: true
         wait: true
-        timeout: "5m"
+        timeout: 5m
         set_values:
           - value: crds.enabled=true
             value_type: raw

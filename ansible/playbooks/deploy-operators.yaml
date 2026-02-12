@@ -107,17 +107,17 @@
         --type='json'
         -p='[
           {
-            "op": "replace",
-            "path": "/spec/template/spec/containers/0/resources",
+            op: replace
+            path: "/spec/template/spec/containers/0/resources",
             "value": {
-              "requests": {
-                "cpu": "100m",
-                "memory": "100Mi",
-                "ephemeral-storage": "500Mi"
+              requests: {
+                cpu: 100m
+                memory: 100Mi
+                ephemeral-storage: 500Mi
               },
-              "limits": {
-                "cpu": "100m",
-                "memory": "200Mi"
+              limits: {
+                cpu: 100m
+                memory: 200Mi
               }
             }
           }

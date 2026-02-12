@@ -74,7 +74,7 @@
       ansible.builtin.template:
         src: rke2-coredns-config.yaml.j2
         dest: /var/lib/rancher/rke2/server/manifests/rke2-coredns-config.yaml
-        mode: "0644"
+        mode: 0644
 
     # -------------------------------------------------------------
     # Deploy RKE2 Traefik HA HelmChartConfig manifest
@@ -86,4 +86,4 @@
       ansible.builtin.template:
         src: rke2-traefik-config.yaml.j2
         dest: /var/lib/rancher/rke2/server/manifests/rke2-traefik-config.yaml
-        mode: "0644"
+        mode: 0644

@@ -1,4 +1,4 @@
-role: "Agent"
+role: Agent
 
 service:
   enabled: false
@@ -15,11 +15,11 @@ env:
         name: openobserve-creds
         key: password
   - name: EXCLUDED_NAMESPACES
-    value: "otel-collector,vector,default,kube-node-lease,kube-public,arc-runners"
+    value: otel-collector,vector,default,kube-node-lease,kube-public,arc-runners
   - name: ERROR_FILTERED_NAMESPACES
-    value: "openobserve,kube-system,cnpg-system,grafana,rabbitmq-system,tempo,victoria-metrics,mongodb,redis,rabbitmq"
+    value: openobserve,kube-system,cnpg-system,grafana,rabbitmq-system,tempo,victoria-metrics,mongodb,redis,rabbitmq
   - name: ROUTED_NAMESPACES
-    value: "kube-system,openobserve,cnpg-system,grafana,cert-manager,rabbitmq-system,tempo,victoria-metrics,mongodb,redis,rabbitmq"
+    value: kube-system,openobserve,cnpg-system,grafana,cert-manager,rabbitmq-system,tempo,victoria-metrics,mongodb,redis,rabbitmq
   - name: APP_NAME
     valueFrom:
       configMapKeyRef:
@@ -61,18 +61,18 @@ hostVolumeMounts:
     readOnly: true
 
 customConfig:
-  data_dir: "/vector-data-dir"
+  data_dir: /vector-data-dir
   
   # -----------------------------------------------------------------------
   # 1. SOURCES
   # -----------------------------------------------------------------------
   sources:
     kubernetes_logs:
-      type: "kubernetes_logs"
+      type: kubernetes_logs
     
     system_logs:
-      type: "file"
-      include: ["/var/log/*log"]
+      type: file
+      include: [/var/log/*log]
 
   # -----------------------------------------------------------------------
   # 2. TRANSFORMS
@@ -80,8 +80,8 @@ customConfig:
   transforms:
     # Step 1: Parse JSON or extract log levels from messages
     unified_parser:
-      type: "remap"
-      inputs: ["kubernetes_logs", "system_logs"]
+      type: remap
+      inputs: [kubernetes_logs, system_logs]
       source: |
         # Attempt to parse JSON
         parsed, err = parse_json(.message)
@@ -91,11 +91,11 @@ customConfig:
           # Handle MongoDB JSON format mapping
           # Only apply if we haven't found a standard 'level' field yet
           if .level == null {
-            if .s == "I" { .level = "INFO" }
-            if .s == "W" { .level = "WARNING" }
-            if .s == "E" { .level = "ERROR" }
-            if .s == "F" { .level = "FATAL" }
-            if .s == "D" { .level = "DEBUG" }
+            if .s == I { .level = INFO }
+            if .s == W { .level = WARNING }
+            if .s == E { .level = ERROR }
+            if .s == F { .level = FATAL }
+            if .s == D { .level = DEBUG }
           }
         }
         
@@ -137,10 +137,10 @@ customConfig:
           if .level == null {
             match, err = parse_regex(.message, r'\d{2}:\d{2}:\d{2}\.\d+\s+(?P<symbol>[*#.\-])\s+')
             if err == null {
-              if match.symbol == "*" { .level = "INFO" }
-              if match.symbol == "#" { .level = "WARNING" }
-              if match.symbol == "-" { .level = "ERROR" }
-              if match.symbol == "." { .level = "DEBUG" }
+              if match.symbol == * { .level = INFO }
+              if match.symbol == # { .level = WARNING }
+              if match.symbol == - { .level = ERROR }
+              if match.symbol == . { .level = DEBUG }
             }
           }
           
@@ -152,13 +152,13 @@ customConfig:
             if err == null {
               # Normalize to uppercase to match other patterns
               level_lower = to_string(match.level)
-              if level_lower == "error" { .level = "ERROR" }
-              if level_lower == "info" { .level = "INFO" }
-              if level_lower == "warning" { .level = "WARNING" }
-              if level_lower == "warn" { .level = "WARNING" }
-              if level_lower == "debug" { .level = "DEBUG" }
-              if level_lower == "critical" { .level = "CRITICAL" }
-              if level_lower == "fatal" { .level = "FATAL" }
+              if level_lower == error { .level = ERROR }
+              if level_lower == info { .level = INFO }
+              if level_lower == warning { .level = WARNING }
+              if level_lower == warn { .level = WARNING }
+              if level_lower == debug { .level = DEBUG }
+              if level_lower == critical { .level = CRITICAL }
+              if level_lower == fatal { .level = FATAL }
             }
           }
 
@@ -170,34 +170,34 @@ customConfig:
             if err == null {
               level_lower = to_string(match.level)
               level_lower = downcase(level_lower)
-              if level_lower == "error" { .level = "ERROR" }
-              if level_lower == "info" { .level = "INFO" }
-              if level_lower == "warning" { .level = "WARNING" }
-              if level_lower == "warn" { .level = "WARNING" }
-              if level_lower == "debug" { .level = "DEBUG" }
-              if level_lower == "critical" { .level = "CRITICAL" }
-              if level_lower == "fatal" { .level = "FATAL" }
+              if level_lower == error { .level = ERROR }
+              if level_lower == info { .level = INFO }
+              if level_lower == warning { .level = WARNING }
+              if level_lower == warn { .level = WARNING }
+              if level_lower == debug { .level = DEBUG }
+              if level_lower == critical { .level = CRITICAL }
+              if level_lower == fatal { .level = FATAL }
             }
           }
         }
         
-        .level = .level || "unknown"
+        .level = .level || UNKNOWN
 
     # Step 2: Filter by level/namespace/pod (rules applied in order)
     spam_filter:
-      type: "remap"
-      inputs: ["unified_parser"]
+      type: remap
+      inputs: [unified_parser]
       source: |
         # Define helper variables
         ns = to_string(.kubernetes.pod_namespace) ?? ""
         pod = to_string(.kubernetes.pod_name) ?? ""
-        level = to_string(.level) ?? "unknown"
+        level = to_string(.level) ?? UNKNOWN
         
         # Parse namespace lists from environment variables
-        excluded_ns_str = get_env_var("EXCLUDED_NAMESPACES") ?? ""
+        excluded_ns_str = get_env_var(EXCLUDED_NAMESPACES) ?? ""
         excluded_ns_list = split(excluded_ns_str, ",")
         
-        error_filtered_ns_str = get_env_var("ERROR_FILTERED_NAMESPACES") ?? ""
+        error_filtered_ns_str = get_env_var(ERROR_FILTERED_NAMESPACES) ?? ""
         error_filtered_ns_list = split(error_filtered_ns_str, ",")
 
         # Rule 0: Exclude specific namespaces entirely (logs are not needed)
@@ -206,12 +206,12 @@ customConfig:
         # Rule 0.5: Filter MongoDB exporter broken pipe and no route to host errors (noisy, non-actionable)
         container = to_string(.kubernetes.container_name) ?? ""
         msg = to_string(.message) ?? ""
-        if container == "metrics" && (match(msg, r'(?i)broken pipe') || match(msg, r'(?i)no route to host')) {
+        if container == metrics && (match(msg, r'(?i)broken pipe') || match(msg, r'(?i)no route to host')) {
           abort
         }
 
         # Rule 1: System logs → WARNING+ only
-        if .source_type == "file" {
+        if .source_type == file {
           if !match(level, r'(?i)^(WARNING|ERROR|CRITICAL|FATAL)$') { abort }
         } else {
           # Rule 2: Infra namespaces → ERROR+ only
@@ -222,10 +222,10 @@ customConfig:
 
     # Step 3: Standardize fields
     field_slimmer:
-      type: "remap"
-      inputs: ["spam_filter"]
+      type: remap
+      inputs: [spam_filter]
       source: |
-        if .source_type == "kubernetes_logs" {
+        if .source_type == kubernetes_logs {
           # 1. Promote key metadata to top-level
           .pod_namespace = .kubernetes.pod_namespace
           .pod_name = .kubernetes.pod_name
@@ -235,35 +235,35 @@ customConfig:
           # 2. Remove the heavy nested metadata object
           del(.kubernetes)
         
-        } else if .source_type == "file" {
-          .node_name = get_env_var("HOSTNAME") ?? "unknown_node"
+        } else if .source_type == file {
+          .node_name = get_env_var(HOSTNAME) ?? UNKNOWN_NODE
         }
         
         # 3. Add resource attributes from environment variables
-        .app_name = get_env_var("APP_NAME") ?? ""
-        .app_version = get_env_var("APP_VERSION") ?? ""
-        .region = get_env_var("REGION") ?? ""
-        .cluster_id = get_env_var("CLUSTER_ID") ?? ""
-        .env = get_env_var("DEPLOYMENT_ENV") ?? ""
+        .app_name = get_env_var(APP_NAME) ?? ""
+        .app_version = get_env_var(APP_VERSION) ?? ""
+        .region = get_env_var(REGION) ?? ""
+        .cluster_id = get_env_var(CLUSTER_ID) ?? ""
+        .env = get_env_var(DEPLOYMENT_ENV) ?? ""
     
     # Step 4: Route logs to different streams based on namespace
     log_router:
-      type: "route"
-      inputs: ["field_slimmer"]
+      type: route
+      inputs: [field_slimmer]
       route:
-        kube_system: '.pod_namespace == "kube-system"'
-        openobserve: '.pod_namespace == "openobserve"'
-        cnpg_system: '.pod_namespace == "cnpg-system"'
-        grafana: '.pod_namespace == "grafana"'
-        cert_manager: '.pod_namespace == "cert-manager"'
-        rabbitmq_system: '.pod_namespace == "rabbitmq-system"'
-        tempo: '.pod_namespace == "tempo"'
-        victoria-metrics: '.pod_namespace == "victoria-metrics"'
-        mongodb: '.pod_namespace == "mongodb"'
-        redis: '.pod_namespace == "redis"'
-        rabbitmq: '.pod_namespace == "rabbitmq"'
-        system: '.source_type == "file"'
-        other_namespaces: '.source_type == "kubernetes_logs" && !includes(split(get_env_var("ROUTED_NAMESPACES") ?? "", ","), .pod_namespace)'
+        kube_system: .pod_namespace == kube-system
+        openobserve: .pod_namespace == openobserve
+        cnpg_system: .pod_namespace == cnpg-system
+        grafana: .pod_namespace == grafana
+        cert_manager: .pod_namespace == cert-manager
+        rabbitmq_system: .pod_namespace == rabbitmq-system
+        tempo: .pod_namespace == tempo
+        victoria-metrics: .pod_namespace == victoria-metrics
+        mongodb: .pod_namespace == mongodb
+        redis: .pod_namespace == redis
+        rabbitmq: .pod_namespace == rabbitmq
+        system: .source_type == file
+        other_namespaces: .source_type == kubernetes_logs && !includes(split(get_env_var(ROUTED_NAMESPACES) ?? "", ","), .pod_namespace)
 
 
   # -----------------------------------------------------------------------
@@ -274,159 +274,159 @@ customConfig:
     # Infra namespaces (ERROR+ only)
     
     sink_kubernetes_kube-system:
-      type: "http"
-      inputs: ["log_router.kube_system"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/kube-system/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.kube_system]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/kube-system/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     sink_kubernetes_openobserve:
-      type: "http"
-      inputs: ["log_router.openobserve"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/openobserve/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.openobserve]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/openobserve/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     sink_kubernetes_cnpg-system:
-      type: "http"
-      inputs: ["log_router.cnpg_system"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/cnpg-system/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.cnpg_system]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/cnpg-system/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     sink_kubernetes_grafana:
-      type: "http"
-      inputs: ["log_router.grafana"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/grafana/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.grafana]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/grafana/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     sink_kubernetes_cert-manager:
-      type: "http"
-      inputs: ["log_router.cert_manager"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/cert-manager/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.cert_manager]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/cert-manager/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     sink_kubernetes_rabbitmq-system:
-      type: "http"
-      inputs: ["log_router.rabbitmq_system"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/rabbitmq-system/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.rabbitmq_system]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/rabbitmq-system/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     sink_kubernetes_tempo:
-      type: "http"
-      inputs: ["log_router.tempo"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/tempo/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.tempo]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/tempo/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     sink_kubernetes_victoria-metrics:
-      type: "http"
-      inputs: ["log_router.victoria-metrics"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/victoria-metrics/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.victoria-metrics]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/victoria-metrics/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     sink_kubernetes_mongodb:
-      type: "http"
-      inputs: ["log_router.mongodb"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/mongodb/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.mongodb]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/mongodb/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     sink_kubernetes_redis:
-      type: "http"
-      inputs: ["log_router.redis"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/redis/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.redis]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/redis/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     sink_kubernetes_rabbitmq:
-      type: "http"
-      inputs: ["log_router.rabbitmq"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/rabbitmq/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.rabbitmq]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/rabbitmq/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
 
     # System logs (WARNING+ only)
     sink_system:
-      type: "http"
-      inputs: ["log_router.system"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/system_logs/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.system]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/system_logs/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}
     
     # All other namespaces that we might missed
     sink_kubernetes_other:
-      type: "http"
-      inputs: ["log_router.other_namespaces"]
-      uri: "http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/other-namespaces/_json"
-      method: "post"
+      type: http
+      inputs: [log_router.other_namespaces]
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/SkiesDota/other-namespaces/_json
+      method: post
       encoding:
-        codec: "json"
+        codec: json
       auth:
-        strategy: "basic"
-        user: "${OPENOBSERVE_USER}"
-        password: "${OPENOBSERVE_PASS}"
+        strategy: basic
+        user: ${OPENOBSERVE_USER}
+        password: ${OPENOBSERVE_PASS}

@@ -1,8 +1,8 @@
 # Victoria Metrics Cluster Configuration
 
 # Use shorter names to avoid K8s naming limits
-fullnameOverride: "vm"
-nameOverride: "vm"
+fullnameOverride: vm
+nameOverride: vm
 
 # Cluster components configuration
 vminsert:
@@ -15,7 +15,7 @@ vminsert:
       cpu: 50m
       memory: 128Mi
   extraArgs:
-    envflag.enable: "true"
+    envflag.enable: true
     envflag.prefix: VM_
     loggerFormat: json
 
@@ -29,7 +29,7 @@ vmselect:
       cpu: 50m
       memory: 256Mi
   extraArgs:
-    envflag.enable: "true"
+    envflag.enable: true
     envflag.prefix: VM_
     loggerFormat: json
 
@@ -43,10 +43,10 @@ vmstorage:
       cpu: 50m
       memory: 384Mi
   extraArgs:
-    envflag.enable: "true"
+    envflag.enable: true
     envflag.prefix: VM_
     loggerFormat: json
-    retentionPeriod: "30d"
+    retentionPeriod: 30d
   persistentVolume:
     enabled: true
     storageClassName: local-path

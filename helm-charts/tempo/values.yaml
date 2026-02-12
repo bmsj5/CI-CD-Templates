@@ -18,7 +18,7 @@ tempo:
         otlp:
           protocols:
             grpc:
-              endpoint: "0.0.0.0:4317"
+              endpoint: 0.0.0.0:4317
 
     # Ingester: Sets the Replication Factor for the whole cluster.
     ingester:
@@ -47,7 +47,7 @@ tempo:
 
     querier:
       frontend_worker:
-        frontend_address: "tempo-query-frontend-discovery.tempo.svc.cluster.local:9095"
+        frontend_address: tempo-query-frontend-discovery.tempo.svc.cluster.local:9095
 
 # -----------------------------------------------------------------------------
 # 2. INFRASTRUCTURE CONFIGURATION

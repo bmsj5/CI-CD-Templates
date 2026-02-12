@@ -20,4 +20,4 @@
       ansible.builtin.template:
         src: inventory.j2
         dest: "/workspace/ansible/inventory.ini"
-        mode: "0644"
+        mode: 0644
