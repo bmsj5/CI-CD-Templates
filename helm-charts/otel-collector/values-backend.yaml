@@ -12,9 +12,6 @@ resources:
     cpu: 50ms
     memory: 256Mi
 
-service:
-  clusterIP: None
-
 config:
   receivers:
     otlp:

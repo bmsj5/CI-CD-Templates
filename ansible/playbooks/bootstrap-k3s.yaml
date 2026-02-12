@@ -83,7 +83,7 @@
         content: |
           kubelet-arg:
             - cpu-manager-policy=static
-            - "system-reserved=cpu={{ reserved_cpu_m }}m"
+            - system-reserved=cpu={{ reserved_cpu_m }}m
         mode: 0644
       notify: Restart K3s
 

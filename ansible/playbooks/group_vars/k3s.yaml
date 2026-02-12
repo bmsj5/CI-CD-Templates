@@ -7,6 +7,6 @@ k3s_build_cluster: true
 k3s_etcd_datastore: true
 
 k3s_server_args:
-  - "--disable=servicelb" # Disable ServiceLB to eliminate svclb-traefik pods and use direct host networking
-  - "--disable-cloud-controller" # Prevents K3s from trying to "talk" to a cloud provider that doesn't exist for bare metal nodes
-  - "--disable=coredns"
+  - --disable=servicelb # Disable ServiceLB to eliminate svclb-traefik pods and use direct host networking
+  - --disable-cloud-controller # Prevents K3s from trying to "talk" to a cloud provider that doesn't exist for bare metal nodes
+  - --disable=coredns

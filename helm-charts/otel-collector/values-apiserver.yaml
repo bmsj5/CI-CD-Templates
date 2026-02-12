@@ -32,7 +32,7 @@ clusterRole:
       verbs: [get, list, watch]
 
 service:
-  enabled: false  # No need for service, this is internal only
+  enabled: false
 
 extraEnvs:
   - name: PROJECT
@@ -54,7 +54,7 @@ extraEnvs:
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: cluster.id
+        key: cluster_id
   - name: ENV
     valueFrom:
       configMapKeyRef:

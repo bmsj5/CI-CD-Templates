@@ -33,11 +33,6 @@ clusterRole:
     # Permission to scrape API server metrics endpoint
     - nonResourceURLs: [/metrics]
       verbs: [get]
-      
-service:
-  enabled: true
-  type: clusterIP
-  internalTrafficPolicy: Local
 
 extraEnvs:
   - name: OPENOBSERVE_AUTH_B64
@@ -68,7 +63,7 @@ extraEnvs:
     valueFrom:
       configMapKeyRef:
         name: cluster-labels
-        key: cluster.id
+        key: cluster_id
   - name: ENV
     valueFrom:
       configMapKeyRef:

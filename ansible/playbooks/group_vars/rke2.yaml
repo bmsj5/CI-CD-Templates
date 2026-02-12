@@ -21,5 +21,5 @@ rke2_disable:
 
 # CPU Manager Policy with GKE-style system reservations
 rke2_kubelet_arg:
-  - "cpu-manager-policy=static"
-  - "system-reserved=cpu={{ reserved_cpu_m }}m"
+  - cpu-manager-policy=static
+  - system-reserved=cpu={{ reserved_cpu_m }}m
