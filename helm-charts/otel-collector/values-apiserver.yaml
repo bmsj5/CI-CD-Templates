@@ -93,19 +93,19 @@ config:
     resource:
       attributes:
         - key: project
-          value: ${env:PROJECT}
+          value: ${PROJECT}
           action: upsert
         - key: app
-          value: ${env:APP}
+          value: ${APP}
           action: upsert
         - key: region
-          value: ${env:REGION}
+          value: ${REGION}
           action: upsert
         - key: cluster.id
-          value: ${env:CLUSTER_ID}
+          value: ${CLUSTER_ID}
           action: upsert
         - key: env
-          value: ${env:ENV}
+          value: ${ENV}
           action: upsert
     # Convert these attributes to strings
     transform:

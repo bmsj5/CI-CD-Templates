@@ -79,7 +79,7 @@ config:
     kubeletstats:
       collection_interval: 15s
       auth_type: serviceAccount
-      endpoint: "https://${env:K8S_NODE_NAME}:10250"
+      endpoint: "https://${K8S_NODE_NAME}:10250"
       insecure_skip_verify: true
       metric_groups:
         - node
@@ -103,7 +103,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the specific MongoDB metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -133,7 +133,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the specific Redis metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -163,7 +163,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the RabbitMQ Management port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -206,7 +206,7 @@ config:
               # KSM is a single pod, so only the collector on KSM's node will scrape it
               # If KSM moves to another node, that collector will pick it up automatically
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
 
             metric_relabel_configs:
@@ -228,7 +228,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the CoreDNS metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -258,7 +258,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${env:K8S_NODE_NAME}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Identify Traefik pods
               - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
@@ -280,19 +280,19 @@ config:
     resource:
       attributes:
         - key: project
-          value: ${env:PROJECT}
+          value: ${PROJECT}
           action: upsert
         - key: app
-          value: ${env:APP}
+          value: ${APP}
           action: upsert
         - key: region
-          value: ${env:REGION}
+          value: ${REGION}
           action: upsert
         - key: cluster.id
-          value: ${env:CLUSTER_ID}
+          value: ${CLUSTER_ID}
           action: upsert
         - key: env
-          value: ${env:ENV}
+          value: ${ENV}
           action: upsert
     # Convert these attributes to strings
     transform:
@@ -336,9 +336,9 @@ config:
       tls:
         insecure: true
       headers:
-        organization: SkiesDota
+        organization: skies-dota
         stream-name: services
-        Authorization: Basic ${env:OPENOBSERVE_AUTH_B64}
+        Authorization: Basic ${OPENOBSERVE_AUTH_B64}
       sending_queue:
         queue_size: 5 # ~60 MB max (5 batches × ~12 MB per batch)
       retry_on_failure:
