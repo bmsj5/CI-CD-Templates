@@ -40,10 +40,10 @@ extraEnvs:
       secretKeyRef:
         name: openobserve-auth-creds
         key: auth_b64
-  - name: K8S_NODE_NAME
+  - name: K8S_NODE_IP
     valueFrom:
       fieldRef:
-        fieldPath: spec.nodeName
+        fieldPath: status.hostIP
   - name: PROJECT
     valueFrom:
       configMapKeyRef:
@@ -79,7 +79,7 @@ config:
     kubeletstats:
       collection_interval: 15s
       auth_type: serviceAccount
-      endpoint: "https://${K8S_NODE_NAME}:10250"
+      endpoint: https://${K8S_NODE_IP}:10250
       insecure_skip_verify: true
       metric_groups:
         - node
@@ -103,7 +103,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
               # 2. Filter: Target the specific MongoDB metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -133,7 +133,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
               # 2. Filter: Target the specific Redis metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -163,7 +163,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
               # 2. Filter: Target the RabbitMQ Management port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -201,12 +201,11 @@ config:
               - source_labels: [__meta_kubernetes_pod_container_port_number]
                 regex: (8080|8081)
                 action: keep
-              # Note: __address__ is automatically set to <pod_ip>:<port> by kubernetes_sd_configs
               # 3. Filter: Only scrape KSM pods on THIS node (prevents duplicates from DaemonSet)
               # KSM is a single pod, so only the collector on KSM's node will scrape it
               # If KSM moves to another node, that collector will pick it up automatically
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
 
             metric_relabel_configs:
@@ -228,7 +227,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
               # 2. Filter: Target the CoreDNS metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -258,7 +257,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_NAME}
+                regex: ${K8S_NODE_IP}
                 action: keep
               # 2. Filter: Identify Traefik pods
               - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
