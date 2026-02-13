@@ -44,6 +44,10 @@ extraEnvs:
     valueFrom:
       fieldRef:
         fieldPath: status.hostIP
+  - name: K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
   - name: PROJECT
     valueFrom:
       configMapKeyRef:
@@ -103,7 +107,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the specific MongoDB metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -133,7 +137,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the specific Redis metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -163,7 +167,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the RabbitMQ Management port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -205,7 +209,7 @@ config:
               # KSM is a single pod, so only the collector on KSM's node will scrape it
               # If KSM moves to another node, that collector will pick it up automatically
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
 
             metric_relabel_configs:
@@ -227,7 +231,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Target the CoreDNS metrics port
               - source_labels: [__meta_kubernetes_pod_container_port_number]
@@ -257,7 +261,7 @@ config:
             relabel_configs:
               # 1. Filter: Only scrape pods on THIS node
               - source_labels: [__meta_kubernetes_pod_node_name]
-                regex: ${K8S_NODE_IP}
+                regex: ${K8S_NODE_NAME}
                 action: keep
               # 2. Filter: Identify Traefik pods
               - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
