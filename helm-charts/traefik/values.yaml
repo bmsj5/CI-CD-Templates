@@ -1,7 +1,6 @@
 # Traefik Ingress Controller Configuration
 # Deployed as DaemonSet with host networking for direct access to ports 80/443
 
-# Deployment configuration
 deployment:
   kind: DaemonSet
 
@@ -12,7 +11,6 @@ hostNetwork: true
 service:
   enabled: false
 
-# Port configuration
 ports:
   web:
     port: 80
@@ -21,25 +19,18 @@ ports:
     port: 443
     hostPort: 443
 
-# Rolling update strategy
-updateStrategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxUnavailable: 1
-    maxSurge: 0
-
-# Security context (running as root for host networking and port binding)
-podSecurityContext:
-  runAsUser: 0
-  runAsNonRoot: false
-  runAsGroup: 0
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 1
+    memory: 512Mi
 
 # Container security context (required for hostPort 80/443 binding)
 securityContext:
-  runAsUser: 0
-  runAsNonRoot: false
-  allowPrivilegeEscalation: true
   capabilities:
     add:
       - NET_BIND_SERVICE
-    drop: []
+    drop:
+      - ALL
