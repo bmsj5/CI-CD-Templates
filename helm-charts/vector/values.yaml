@@ -12,7 +12,7 @@ env:
         name: openobserve-root-creds
         key: ZO_ROOT_USER_PASSWORD
   - name: EXCLUDED_NAMESPACES
-    value: otel-collector,vector,default,kube-node-lease,kube-public,arc-runners
+    value: otel-collector,vector,default,kube-node-lease,kube-public
   - name: ERROR_FILTERED_NAMESPACES
     value: kube-system,cert-manager,openobserve,cnpg-system,grafana,rabbitmq-system,tempo,victoria-metrics,mongodb,redis,rabbitmq,external-dns
   - name: ROUTED_NAMESPACES
