@@ -1,11 +1,11 @@
 # Grafana Tempo Configuration - Distributed/Microservices Mode
-
+# Required secrets: see required-secrets.yaml in this directory.
+#
 # -----------------------------------------------------------------------------
 # 1. APPLICATION CONFIGURATION
 # -----------------------------------------------------------------------------
-tempo:
-  mode: microservices
 
+tempo:
   # Structured Config (The App Logic)
   structuredConfig:
     server:
@@ -26,18 +26,16 @@ tempo:
       lifecycler:
         ring:
           replication_factor: 1
-          kvstore:
-            store: memberlist
 
-    # Storage: S3 configuration
+    # Storage: S3 (same secret as MinIO subchart: rootUser/rootPassword)
     storage:
       trace:
         backend: s3
         s3:
-          endpoint: tempo-minio-hl.tempo.svc.cluster.local:9000
+          endpoint: tempo-minio.tempo.svc.cluster.local:9000
           bucket: tempo-traces
-          access_key: ""
-          secret_key: ""
+          access_key: ${rootUser}
+          secret_key: ${rootPassword}
           insecure: true
 
     compactor:
@@ -62,14 +60,11 @@ traces:
 
 distributor:
   replicas: 1
-  envFrom:
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
     - secretRef:
         name: tempo-minio-creds
-  extraPorts:
-    - name: grpc-otlp
-      port: 4317
-      targetPort: 4317
-      protocol: TCP
   resources:
     limits:
       cpu: 200m
@@ -80,24 +75,28 @@ distributor:
 
 ingester:
   replicas: 1
-  envFrom:
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
     - secretRef:
         name: tempo-minio-creds
   persistence:
     enabled: true
     size: 1Gi
-    storageClassName: local-path
+    storageClass: local-path
   resources:
     limits:
       cpu: 200m
       memory: 256Mi
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 128Mi 
 
 querier:
   replicas: 1
-  envFrom:
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
     - secretRef:
         name: tempo-minio-creds
   resources:
@@ -110,7 +109,24 @@ querier:
 
 compactor:
   replicas: 1
-  envFrom:
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-minio-creds
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+queryFrontend:
+  replicas: 1
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
     - secretRef:
         name: tempo-minio-creds
   resources:
@@ -124,10 +140,20 @@ compactor:
 memcached:
   replicas: 1
 
-metaMonitoring:
-  serviceMonitor:
-    enabled: false
-
-serviceAccount:
-  create: true
-
+minio:
+  enabled: true
+  replicas: 1
+  existingSecret: tempo-minio-creds
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: local-path
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  buckets:
+    - name: tempo-traces

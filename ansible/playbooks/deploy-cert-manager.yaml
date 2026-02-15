@@ -23,7 +23,7 @@
         wait: true
         timeout: 5m
         set_values:
-          - value: crds.enabled=true
+          - value: installCRDs=true
             value_type: raw
 
     - name: Create Let's Encrypt ClusterIssuer

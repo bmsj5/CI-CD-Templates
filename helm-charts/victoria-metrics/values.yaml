@@ -1,4 +1,5 @@
 # Victoria Metrics Cluster Configuration
+# Required secrets: see required-secrets.yaml in this directory.
 
 # Use shorter names to avoid K8s naming limits
 fullnameOverride: vm
@@ -14,10 +15,6 @@ vminsert:
     requests:
       cpu: 50m
       memory: 128Mi
-  extraArgs:
-    envflag.enable: true
-    envflag.prefix: VM_
-    loggerFormat: json
 
 vmselect:
   replicaCount: 1
@@ -28,10 +25,6 @@ vmselect:
     requests:
       cpu: 50m
       memory: 256Mi
-  extraArgs:
-    envflag.enable: true
-    envflag.prefix: VM_
-    loggerFormat: json
 
 vmstorage:
   replicaCount: 1
@@ -42,13 +35,7 @@ vmstorage:
     requests:
       cpu: 50m
       memory: 384Mi
-  extraArgs:
-    envflag.enable: true
-    envflag.prefix: VM_
-    loggerFormat: json
-    retentionPeriod: 30d
+  retentionPeriod: 30d
   persistentVolume:
-    enabled: true
     storageClassName: local-path
     size: 20Gi
-

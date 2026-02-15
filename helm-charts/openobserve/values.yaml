@@ -31,13 +31,21 @@ config:
   # The chart will automatically configure the S3 endpoint and keys.
   ZO_S3_BUCKET_NAME: openobserve-logs # You can change this if you want
 
-auth:
-  existingSecret: openobserve-root-creds
+# Auth values are overridden via extraEnv from the secret
+extraEnv:
+- name: ZO_ROOT_USER_EMAIL
+  valueFrom:
+    secretKeyRef:
+      name: openobserve-root-creds
+      key: ZO_ROOT_USER_EMAIL
+- name: ZO_ROOT_USER_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: openobserve-root-creds
+      key: ZO_ROOT_USER_PASSWORD
 
 postgres:
-  enabled: true
   spec:
-    instances: 3
     storage:
       size: 1Gi
       storageClass: local-path
@@ -59,34 +67,17 @@ alertmanager:
 
 # NATS: chart uses nats.config.jetstream.fileStore.pvc
 nats:
-  enabled: true
   config:
-    cluster:
-      enabled: true
-      replicas: 3
     jetstream:
-      enabled: true
       fileStore:
-        enabled: true
         pvc:
-          enabled: true
           size: 5Gi
           storageClassName: local-path
-  resources:
-    limits:
-      cpu: 100m
-      memory: 256Mi
-    requests:
-      cpu: 25m
-      memory: 128Mi
 
 # MinIO sub-chart settings
 minio:
   enabled: true
   replicas: 3
-  persistence:
-    size: 40Gi
-    storageClass: local-path
   resources:
     limits:
       cpu: 200m
@@ -94,3 +85,6 @@ minio:
     requests:
       cpu: 50m
       memory: 256Mi
+  persistence:
+    size: 40Gi
+    storageClass: local-path

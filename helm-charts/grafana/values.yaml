@@ -1,23 +1,9 @@
 # Grafana HA Configuration
-
-# Admin credentials (will be overridden by Ansible)
-adminUser: ""
-adminPassword: ""
+# Required secrets: see required-secrets.yaml in this directory.
 
 replicas: 3
-
-persistence:
-  enabled: false
-
-# Pod disruption budget for HA
 podDisruptionBudget:
-  enabled: true
   minAvailable: 2
-
-grafana.ini:
-  plugins:
-    allow_loading_unsigned_plugins: grafana-openobserve-datasource
-
 resources:
   limits:
     cpu: 500m
@@ -25,37 +11,42 @@ resources:
   requests:
     cpu: 250m
     memory: 512Mi
-
-# External PostgreSQL database configuration (required for HA)
-# Configured via environment variables
+admin:
+  existingSecret: grafana-admin-creds
+  userKey: user
+  passwordKey: password
+envValueFrom:
+  GF_DATABASE_USER:
+    secretKeyRef:
+      name: grafana-db-creds
+      key: username
+  GF_DATABASE_PASSWORD:
+    secretKeyRef:
+      name: grafana-db-creds
+      key: password
+  ZO_ROOT_USER_EMAIL:
+    secretKeyRef:
+      name: grafana-datasource-openobserve-root-creds
+      key: ZO_ROOT_USER_EMAIL
+  ZO_ROOT_USER_PASSWORD:
+    secretKeyRef:
+      name: grafana-datasource-openobserve-root-creds
+      key: ZO_ROOT_USER_PASSWORD
 env:
   GF_DATABASE_TYPE: postgres
   GF_DATABASE_HOST: grafana-postgres-rw.grafana.svc.cluster.local
   GF_DATABASE_NAME: grafana
-  GF_DATABASE_USER: grafana
-  # GF_DATABASE_PASSWORD will be set via Ansible set_values
   GF_DATABASE_SSL_MODE: disable
-  # Session storage (MUST use database for HA)
   GF_SESSION_PROVIDER: database
-  # Plugin installation (synchronous - ensures plugins are ready before Grafana starts)
   GF_PLUGINS_PREINSTALL_SYNC: victoriametrics-metrics-datasource
-  # Session settings
-  GF_SESSION_COOKIE_MAX_AGE: "315360000"  # 10 years
-  GF_SECURITY_LOGIN_REMEMBER_DAYS: "3650"  # 10 years
-  # Auth session lifetime settings
-  GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: 3650d  # 10 years inactive
-  GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: 3650d  # 10 years total
-  GF_SECURITY_COOKIE_SECURE: "true" 
+  GF_SESSION_COOKIE_MAX_AGE: "315360000"
+  GF_SECURITY_LOGIN_REMEMBER_DAYS: "3650"
+  GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: 3650d
+  GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: 3650d
+  GF_SECURITY_COOKIE_SECURE: "true"
   GF_SECURITY_COOKIE_SAMESITE: lax
-  # Logging
   GF_LOG_LEVEL: warn
-
-# SHARED VOLUME FOR MANUAL PLUGINS
-extraVolumes:
-  - name: openobserve-plugin-storage
-    emptyDir: {}
-
-# INIT CONTAINER TO DOWNLOAD PLUGIN
+  GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: grafana-openobserve-datasource
 extraInitContainers:
   - name: download-openobserve-plugin
     image: alpine:latest
@@ -76,32 +67,40 @@ extraInitContainers:
     volumeMounts:
       - name: openobserve-plugin-storage
         mountPath: /var/lib/grafana/plugins
-
-# Mount shared volume to main container
+extraVolumes:
+  - name: openobserve-plugin-storage
+    emptyDir: {}
 extraVolumeMounts:
   - name: openobserve-plugin-storage
     mountPath: /var/lib/grafana/plugins
 
-# Datasources provisioning via ConfigMap (separate file)
-# The datasources.yaml file is mounted as a ConfigMap
-# See helm-charts/grafana/datasources.yaml for the datasource definitions
-extraConfigmapMounts:
-  - name: grafana-datasources
-    mountPath: /etc/grafana/provisioning/datasources
-    configMap: grafana-datasources
-    readOnly: true
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo-query-frontend.tempo.svc.cluster.local:3200
 
-# Ingress configuration
-ingress:
-  enabled: true
-  ingressClassName: traefik
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  path: /
-  pathType: Prefix
-  hosts:
-    - grafana.skiesdota.ru
-  tls:
-    - secretName: grafana-tls-secret
-      hosts:
-        - grafana.skiesdota.ru
+      - name: VictoriaMetrics
+        type: victoriametrics-metrics-datasource
+        uid: victoriametrics
+        url: http://vm-vmselect.victoria-metrics.svc.cluster.local:8481/select/0/prometheus
+        access: proxy
+        isDefault: false
+        jsonData:
+          httpMethod: POST
+          timeInterval: 15s
+
+      - name: OpenObserve
+        type: grafana-openobserve-datasource
+        uid: openobserve
+        url: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+        access: proxy
+        isDefault: false
+        user: ${ZO_ROOT_USER_EMAIL}
+        jsonData:
+          database: skies-dota
+        secureJsonData:
+          password: ${ZO_ROOT_USER_PASSWORD}
