@@ -21,15 +21,10 @@ clusterRole:
   create: true
   rules:
     # Additional permissions beyond what presets provide:
-    # - loadbalancing exporter needs to discover backend pods via K8s service discovery
-    # - prometheus receiver with kubernetes_sd_configs needs pod/node discovery
+    # - prometheus receiver uses role: pod only; pod/node/namespace/service for metadata
     - apiGroups: [""]
-      resources: [pods, endpoints, nodes, namespaces, services]
+      resources: [pods, nodes, namespaces, services]
       verbs: [get, watch, list]
-    # Permissions for service discovery (endpointslices)
-    - apiGroups: [discovery.k8s.io]
-      resources: [endpointslices]
-      verbs: [get, list, watch]
     # Permission to scrape API server metrics endpoint
     - nonResourceURLs: [/metrics]
       verbs: [get]

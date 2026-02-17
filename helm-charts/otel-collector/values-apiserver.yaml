@@ -25,10 +25,13 @@ clusterRole:
     # Permission to scrape API server metrics endpoint
     - nonResourceURLs: [/metrics]
       verbs: [get]
-    # Permissions for Kubernetes service discovery (endpoints role)
+    # Permissions for Kubernetes service discovery (endpointslice role)
     # Required for kubernetes_sd_configs to discover API server endpoints
+    - apiGroups: [discovery.k8s.io]
+      resources: [endpointslices]
+      verbs: [get, list, watch]
     - apiGroups: [""]
-      resources: [endpoints, services]
+      resources: [services]
       verbs: [get, list, watch]
 
 service:
@@ -75,10 +78,10 @@ config:
               insecure_skip_verify: true
             bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token 
             kubernetes_sd_configs:
-              - role: endpoints
+              - role: endpointslice
             relabel_configs:
               # Filter: Target the default/kubernetes service (The API Server)
-              - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+              - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpointslice_port_name]
                 action: keep
                 regex: default;kubernetes;https
 
