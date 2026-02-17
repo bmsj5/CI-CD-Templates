@@ -215,7 +215,7 @@ config:
             metric_relabel_configs:
               # Keep essential cluster state metrics for Grafana dashboard
               - source_labels: [__name__]
-                regex: kube
+                regex: kube_(deployment_(spec_replicas|status_replicas|status_replicas_(available|unavailable|ready)|status_observed_generation|metadata_generation|labels)|replicaset_(spec_replicas|status_replicas|status_ready_replicas)|pod_(status_(phase|ready|condition|qos_class|reason|scheduled)|container_(status_(restarts_total|ready|waiting|waiting_reason|running|terminated|last_terminated_reason|last_terminated_exitcode)|resource_(requests|limits)|info)|spec_volumes_persistentvolumeclaim_info|info)|node_(status_(condition|allocatable|capacity)|info)|namespace_(labels|annotations|created)|service_(info|spec_type)|endpoint_(info|address_(available|not_ready))|ingress_info|daemonset_(status_(desired_number_scheduled|number_ready|number_available|number_misscheduled)|labels)|statefulset_(replicas|status_replicas|status_replicas_ready|labels)|cronjob_info|job_status_(failed|succeeded|active)|horizontalpodautoscaler_(status_(current_replicas|desired_replicas)|info)|persistentvolumeclaim_(status_(phase|resource_requests_storage_bytes|capacity_bytes)|info)|configmap_info|secret_info|networkpolicy_labels)
                 action: keep
           
           # -----------------------------------------------------------------------
@@ -335,7 +335,7 @@ config:
         max_elapsed_time: 2m
 
     otlp/logs:
-      endpoint: o2-openobserve-router.openobserve.svc.cluster.local:5081
+      endpoint: o2-openobserve-router.openobserve.svc.cluster.local:5080
       tls:
         insecure: true
       headers:
