@@ -335,12 +335,10 @@ config:
         max_elapsed_time: 2m
 
     otlp/logs:
-      endpoint: o2-openobserve-router.openobserve.svc.cluster.local:5080
+      endpoint: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/services/_json
       tls:
         insecure: true
       headers:
-        organization: skies-dota
-        stream-name: services
         Authorization: Basic ${OPENOBSERVE_AUTH_B64}
       sending_queue:
         queue_size: 5 # ~60 MB max (5 batches × ~12 MB per batch)

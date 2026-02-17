@@ -278,169 +278,141 @@ customConfig:
     sink_kubernetes_kube-system:
       type: http
       inputs: [log_router.kube_system]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/kube-system/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: kube-system
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     sink_kubernetes_openobserve:
       type: http
       inputs: [log_router.openobserve]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/openobserve/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: openobserve
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     sink_kubernetes_cnpg-system:
       type: http
       inputs: [log_router.cnpg_system]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/cnpg-system/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: cnpg-system
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     sink_kubernetes_grafana:
       type: http
       inputs: [log_router.grafana]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/grafana/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: grafana
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     sink_kubernetes_cert-manager:
       type: http
       inputs: [log_router.cert_manager]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/cert-manager/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: cert-manager
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     sink_kubernetes_rabbitmq-system:
       type: http
       inputs: [log_router.rabbitmq_system]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/rabbitmq-system/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: rabbitmq-system
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_tempo:  
       type: http
       inputs: [log_router.tempo]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/tempo/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: tempo
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_victoria-metrics:
       type: http
       inputs: [log_router.victoria-metrics]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/victoria-metrics/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: victoria-metrics
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_mongodb:
       type: http
       inputs: [log_router.mongodb]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/mongodb/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: mongodb
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_redis:
       type: http
       inputs: [log_router.redis]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/redis/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: redis
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_rabbitmq:
       type: http
       inputs: [log_router.rabbitmq]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/rabbitmq/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: rabbitmq
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     sink_kubernetes_external-dns:
       type: http
       inputs: [log_router.external-dns]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/external-dns/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: external-dns
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
 
     # System logs (WARNING+ only)
     sink_system:
       type: http
       inputs: [log_router.system]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/system_logs/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: system_logs
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
     
     # All other namespaces that we might missed
     sink_kubernetes_other:
       type: http
       inputs: [log_router.other_namespaces]
-      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080
+      uri: http://o2-openobserve-router.openobserve.svc.cluster.local:5080/api/${PROJECT}/other_namespaces/_json
       encoding:
         codec: json
       request:
         headers:
-          organization: skies-dota
-          stream-name: other_namespaces
           Authorization: Basic ${OPENOBSERVE_AUTH_B64}
