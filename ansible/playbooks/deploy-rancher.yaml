@@ -18,7 +18,7 @@
       kubernetes.core.helm:
         name: rancher
         chart_ref: rancher
-        chart_repo_url: https://releases.rancher.com/server-charts/latest
+        chart_repo_url: https://releases.rancher.com/server-charts/stable
         chart_version: 2.13.2
         release_namespace: cattle-system
         create_namespace: true
