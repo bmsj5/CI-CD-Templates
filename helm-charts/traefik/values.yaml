@@ -27,6 +27,12 @@ resources:
     cpu: 1
     memory: 512Mi
 
+# Pod security context (run as root for host networking)
+podSecurityContext:
+  runAsUser: 0
+  runAsNonRoot: false
+  runAsGroup: 0
+
 # Container security context (required for hostPort 80/443 binding)
 securityContext:
   capabilities:
@@ -34,3 +40,8 @@ securityContext:
       - NET_BIND_SERVICE
     drop:
       - ALL
+
+updateStrategy:
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 0
